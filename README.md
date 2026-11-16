@@ -74,6 +74,20 @@ Replace the path and token with your local values. The API token is shown in the
 
 Run it manually with `pnpm mcp:stdio` after setting `HIDER_API_TOKEN`. The adapter writes MCP responses to stdout and diagnostics to stderr.
 
+## Encrypted local profile backups
+
+Profile Transfer now supports a separate `.hiderbackup` format for a passphrase-encrypted local snapshot of a stopped, persistent profile.
+
+- The manifest and browser-data files are encrypted with AES-256-GCM using a key derived from the backup passphrase with Argon2id.
+- Browser files are encrypted in bounded chunks and checked with BLAKE3 hashes when restored.
+- The backup passphrase must be at least 12 bytes and cannot be reset; store it separately from the backup file.
+- Creating a backup requires the browser to be closed. A password-protected profile must also be locked so the snapshot cannot miss newer changes held in its RAM-backed copy.
+- Restore always creates a new profile. It never overwrites an existing profile.
+- Proxy/VPN assignments, network routing, group membership, DNS overrides, and launch hooks are cleared on restore. The original profile's password protection remains in place.
+- The archive is written to the location you select. It is not uploaded or synchronized to a cloud service.
+
+This is separate from the existing `.donutprofile` portable transfer format. Keep a second copy of important backups on another device or removable drive.
+
 ## Cloud-dependent features deliberately excluded from the local edition
 
 - Donut cloud backup and cloud profile synchronization.
@@ -148,7 +162,7 @@ APPIMAGE_EXTRACT_AND_RUN=1 ./HiderTHBROWser_*.AppImage
 | Cloud profile backup and sync | Excluded |
 | Cloud Cookie Bot schedule/remote execution | Excluded |
 | Local Cookie Bot replacement scheduler | Planned |
-| Encrypted local full-profile backup/restore | Planned |
+| Encrypted local full-profile backup/restore | Implemented in the Rust backend and Profile Transfer UI; native CI validation pending |
 | Authenticated local MCP endpoint | Implemented; protocol testing pending |
 | MCP stdio adapter for local AI clients | Implemented; protocol testing pending |
 | Windows installer | Workflow added; build pending |
