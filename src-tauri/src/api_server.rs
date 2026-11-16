@@ -1108,6 +1108,14 @@ impl ApiServer {
       .port();
 
     let v1_routes = build_v1_router();
+    // Local Hider MCP uses the same browser-control engine as the former
+    // remote bridge, but is served only through this authenticated loopback API.
+    let v1_routes = v1_routes.route(
+      "/v1/mcp",
+      axum::routing::post(local_mcp_message)
+        .layer(DefaultBodyLimit::max(2 * 1024 * 1024)),
+    );
+
     #[cfg(feature = "e2e")]
     let v1_routes = v1_routes.route("/v1/e2e/mcp", axum::routing::post(e2e_mcp_message));
 
@@ -1163,6 +1171,46 @@ impl ApiServer {
 
     self.port = None;
     Ok(())
+  }
+}
+
+
+/// The local stdio bridge reaches the same MCP engine through the already
+/// authenticated loopback API. MCP session ids are returned in the standard
+/// header, while JSON-RPC bodies pass through unchanged.
+async fn local_mcp_message(headers: HeaderMap, body: axum::body::Bytes) -> Response {
+  use crate::mcp_server::{McpOutcome, McpServer};
+
+  let session = headers
+    .get("mcp-session-id")
+    .and_then(|value| value.to_str().ok());
+
+  match McpServer::instance()
+    .handle_message_with(session, &body, None)
+    .await
+  {
+    McpOutcome::Body {
+      body,
+      new_session_id,
+    } => {
+      let mut response = Json(body).into_response();
+      if let Some(session_id) = new_session_id {
+        if let Ok(value) = axum::http::HeaderValue::from_str(&session_id) {
+          response.headers_mut().insert("mcp-session-id", value);
+        }
+      }
+      response
+    }
+    McpOutcome::Accepted => StatusCode::ACCEPTED.into_response(),
+    McpOutcome::UnknownSession => StatusCode::NOT_FOUND.into_response(),
+    McpOutcome::BadRequest => StatusCode::BAD_REQUEST.into_response(),
+    McpOutcome::RateLimited { retry_after_secs } => {
+      let mut response = StatusCode::TOO_MANY_REQUESTS.into_response();
+      if let Ok(value) = axum::http::HeaderValue::from_str(&retry_after_secs.to_string()) {
+        response.headers_mut().insert(header::RETRY_AFTER, value);
+      }
+      response
+    }
   }
 }
 
@@ -1434,7 +1482,10 @@ fn is_automation_request(method: &Method, path: &str) -> bool {
   // start-up, and they are not what spends the account's hours.
   if matches!(
     path,
-    "/v1/profiles/batch/run" | "/v1/profiles/batch/stop" | "/v1/cookie-bot/runs"
+    "/v1/profiles/batch/run"
+      | "/v1/profiles/batch/stop"
+      | "/v1/cookie-bot/runs"
+      | "/v1/mcp"
   ) {
     return true;
   }
