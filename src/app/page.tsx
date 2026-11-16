@@ -3417,6 +3417,7 @@ export default function Home() {
             setCreateProfileDialogOpen(false);
           }}
           onCreateProfile={handleCreateProfile}
+          onLaunchProfiles={executeBulkRun}
           selectedGroupId={selectedGroupId}
           crossOsUnlocked={crossOsUnlocked}
           profileNames={profiles.map((profile) => profile.name)}
