@@ -1,7 +1,7 @@
 // The AppStream metainfo the AppImage carries, made from the shared one
 // before Tauri bundles (`beforeBundleCommand`). AppImage tools look for
 // `usr/share/metainfo/*.appdata.xml`, and the AppImage's desktop entry is
-// `Donut.desktop`, not the Flatpak's `com.donutbrowser.DonutBrowser.desktop`.
+// `HiderTHBROWser.desktop`, not the Flatpak's `HiderTHBROWser.desktop`.
 // The URL types AppStream 0.15 does not know (Ubuntu 22.04, the oldest
 // system the AppImage runs on) are left out, so the file validates there.
 // The version being bundled becomes the newest release, as
@@ -14,18 +14,18 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const SHARED_METAINFO = resolve(
   ROOT,
-  "packaging/linux/com.donutbrowser.DonutBrowser.metainfo.xml",
+  "packaging/linux/com.hiderthbrowser.HiderTHBROWser.metainfo.xml",
 );
 /** Where `bundle.linux.appimage.files` in tauri.conf.json takes it from. */
 export const APPIMAGE_METAINFO = resolve(
   ROOT,
-  "src-tauri/target/appimage/com.donutbrowser.DonutBrowser.appdata.xml",
+  "src-tauri/target/appimage/com.hiderthbrowser.HiderTHBROWser.appdata.xml",
 );
 
 const SHARED_LAUNCHABLE =
-  '<launchable type="desktop-id">com.donutbrowser.DonutBrowser.desktop</launchable>';
+  '<launchable type="desktop-id">HiderTHBROWser.desktop</launchable>';
 const APPIMAGE_LAUNCHABLE =
-  '<launchable type="desktop-id">Donut.desktop</launchable>';
+  '<launchable type="desktop-id">HiderTHBROWser.desktop</launchable>';
 const NEWER_URL_TYPES =
   /^[ \t]*<url type="(?:vcs-browser|contribute)">.*<\/url>\r?\n/gm;
 const RELEASES = /^([ \t]*)<releases>\r?\n/m;
