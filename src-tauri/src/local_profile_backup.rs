@@ -8,8 +8,7 @@
 //! A restore always creates a NEW profile UUID. It never overwrites an existing
 //! profile or restores stale process/network references.
 
-use aes_gcm::aead::OsRng;
-use rand::RngCore;
+use rand::RngExt;
 use serde::{Deserialize, Serialize};
 use std::fs::{self, File, OpenOptions};
 use std::io::{BufReader, BufWriter, Read, Write};
@@ -375,8 +374,7 @@ pub async fn create_local_profile_backup(
     total_bytes: 0,
   };
 
-  let mut salt = [0u8; 16];
-  OsRng.fill_bytes(&mut salt);
+  let salt: [u8; 16] = rand::rng().random();
   let key = crate::sync::encryption::derive_vault_key(password.as_bytes(), &salt)?;
 
   if let Some(parent) = destination.parent() {
