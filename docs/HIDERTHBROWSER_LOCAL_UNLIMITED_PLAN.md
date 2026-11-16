@@ -37,7 +37,7 @@ These are upstream product-plan rules, not hard limits imposed by the local brow
 ### Make unlimited locally available
 
 1. **Profiles and fingerprint generation:** no subscription-based generations/hour cap and no paid-plan browser-seat cap in the local edition. Keep a configurable launch queue and a sensible default concurrency to protect the machine. A user can raise it.
-2. **Cross-OS identity configuration:** expose the engine's supported local identity options without checking cloud plan entitlements. Clearly label engine/platform support and never claim a fingerprint is undetectable.
+2. **Native identity generation:** expose local Wayfern identity creation for the host OS without plan quotas. A non-native OS identity is still subject to Wayfern's own `wayfernToken` requirement; the current fork obtains that token from the Donut account service. Do not fake a token or claim offline cross-OS identity generation is available.
 3. **Local Browser Manipulation API:** keep it bound to loopback by default and available without cloud sign-in. No subscription/hour quota. Retain authentication, request-size limits, concurrency control, and user-configurable rate protection.
 4. **Local MCP:** expose the existing browser-control tools through stdio and optionally authenticated loopback Streamable HTTP. No cloud relay required.
 5. **Local recipes:** execute saved recipes on this device with visible run state, timeouts, cancellation, and local audit events.
@@ -70,7 +70,7 @@ These are upstream product-plan rules, not hard limits imposed by the local brow
 2. **Encrypted Local Backup/Restore:** full profile data snapshots with AES-GCM, passphrase-based key derivation, integrity verification, backup rotation, and a restore preview. Never include secrets in plain JSON.
 3. **Local MCP Agent Mode:** stdio first; tools for profiles, launch sets, navigation, screenshots, tabs, cookie consent, and recipes. Every write/destructive action should require explicit tool invocation and be audited.
 4. **Proxy Health Center:** per-profile proxy test, exit-IP display, DNS/WebRTC leak diagnostics, latency history, and clear warnings when the route differs from the fingerprint's location.
-5. **Local Automation Scheduler:** schedules run only while the desktop is available; support site checks and workflows against domains/accounts the user controls, with visible progress, timeouts, retry policy, and a stop-all control.
+5. **Local Automation Scheduler:** schedules run only while the desktop is available; support site checks and workflows against domains/accounts the user controls, with visible progress, timeouts, retry policy, and a stop-all control. This is for authorized QA and personal workflows, not artificial engagement or evasion of anti-abuse systems.
 6. **Profile Template Library:** reusable OS/browser/screen/language/timezone templates with compatibility validation and clear identity provenance.
 7. **Session Health Dashboard:** per-profile process state, memory/CPU, open tabs, proxy health, recent errors, and a one-click safe close.
 8. **Release engineering:** CI for Rust/TypeScript tests, signed release artifacts where signing credentials exist, SBOM/license manifest, checksums, and rollback-capable updates.
