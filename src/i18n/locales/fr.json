@@ -1848,7 +1848,9 @@
     "encryptedRestorePassword": "Phrase secrète de sauvegarde",
     "encryptedRestoreButton": "Restaurer en tant que nouveau profil",
     "encryptedRestoreSuccess": "{{name}} a été restauré comme nouveau profil",
-    "encryptedRestoreFileType": "Sauvegarde chiffrée HiderTHBROWser"
+    "encryptedRestoreFileType": "Sauvegarde chiffrée HiderTHBROWser",
+    "encryptedRestoreWrongPassword": "La phrase secrète est incorrecte ou la sauvegarde est endommagée.",
+    "encryptedRestoreInvalidArchive": "Ce fichier n'est pas une sauvegarde chiffrée HiderTHBROWser valide."
   },
   "extensions": {
     "title": "Extensions",
