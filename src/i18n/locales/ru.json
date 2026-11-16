@@ -1859,7 +1859,9 @@
     "encryptedRestorePassword": "Парольная фраза резервной копии",
     "encryptedRestoreButton": "Восстановить как новый профиль",
     "encryptedRestoreSuccess": "{{name}} восстановлен как новый профиль",
-    "encryptedRestoreFileType": "Зашифрованная копия HiderTHBROWser"
+    "encryptedRestoreFileType": "Зашифрованная копия HiderTHBROWser",
+    "encryptedRestoreWrongPassword": "Парольная фраза неверна или резервная копия повреждена.",
+    "encryptedRestoreInvalidArchive": "Этот файл не является действительной зашифрованной копией HiderTHBROWser."
   },
   "extensions": {
     "title": "Расширения",
