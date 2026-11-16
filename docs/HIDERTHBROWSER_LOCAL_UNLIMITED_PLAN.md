@@ -42,14 +42,15 @@ These are upstream product-plan rules, not hard limits imposed by the local brow
 4. **Local MCP:** expose the existing browser-control tools through stdio and optionally authenticated loopback Streamable HTTP. No cloud relay required.
 5. **Local recipes:** execute saved recipes on this device with visible run state, timeouts, cancellation, and local audit events.
 6. **Proxy/VPN/DNS tools:** retain the existing local implementation. Do not couple local proxy setup to cloud proxy inventory.
-7. **Local profile backup/synchronizer:** encrypted local backup/restore, versioned manifests, integrity checks, rollback, and user-selected folders/removable drives. Never upload profile data.
+7. **Local profile backup/synchronizer:** implemented passphrase-encrypted `.hiderbackup` snapshots and restore-as-new-profile in the Rust backend; user-selected destinations and removable drives work without cloud upload. Backup rotation and scheduled synchronization remain future work.
 8. **Local audit log:** searchable and exportable. Redact credentials, cookies, authorization headers, and page content.
 
 ### Replace cloud-only services with honest local equivalents
 
 | Upstream feature | Local HiderTHBROWser treatment |
 |---|---|
-| Cloud profile backups / cloud sync | Encrypted local snapshots and manual folder/removable-drive synchronization |
+| Cloud profile backups / cloud sync | Encrypted local snapshots and manual folder/removable-drive transfer |
+| Encrypted local profile backup/restore | Implemented in the Rust backend and Profile Transfer UI; native CI validation pending |
 | Remote MCP relay | Local stdio MCP and optional authenticated loopback MCP |
 | Cookie Bot remote hours/schedule | Local scheduler for user-authorized browser QA workflows; no remote-host hours or cloud claims |
 | Remote browser execution hours | Run locally while this computer is on; resource controls are local |
@@ -89,7 +90,7 @@ The source fork is AGPL-3.0. Rebranding and distributing a modified version must
 2. Remove the local profile-generation and running-seat subscription caps; replace with a local queue and user-set concurrency.
 3. Make the local REST API and MCP tools available without an account while keeping loopback authentication and rate protection.
 4. Hide/disable cloud-only screens and remove automatic calls to Donut hosted services from the offline build.
-5. Build encrypted local profile backup/restore and local scheduling.
+5. Verify encrypted local profile backup/restore on Windows and Linux; implement the local automation scheduler.
 6. Rebrand the Tauri app, identifiers, updater, icons, docs, installer names, and package metadata.
 7. Run Rust tests, frontend checks, Windows/macOS/Linux CI, then publish installers.
 
