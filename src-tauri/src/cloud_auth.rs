@@ -2076,6 +2076,11 @@ pub async fn cloud_exchange_device_code(
 /// backoff band reporting "not signed in" on the account page: an error
 /// describing nothing the user did.
 pub(crate) async fn ensure_remote_bridge(app_handle: &tauri::AppHandle) {
+  // The local edition has no account-backed remote bridge, even if an old
+  // settings file still has the remote-control toggle enabled.
+  if cfg!(feature = "hider-local-unlimited") {
+    return;
+  }
   if crate::mcp_remote::is_running() {
     return;
   }

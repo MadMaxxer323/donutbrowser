@@ -2984,7 +2984,9 @@ pub fn run_with_builder(
         let settings_mgr = settings_manager::SettingsManager::instance();
         match settings_mgr.load_settings() {
           Ok(settings) => {
-            if settings.mcp_remote_enabled && !cfg!(feature = "hider-local-unlimited") {
+            if settings.mcp_remote_enabled
+              && !cfg!(feature = "hider-local-unlimited")
+            {
               // One helper, shared with the sign-in path and the ten-minute
               // reconnect tick, so "when may the bridge open" has exactly one
               // answer. It re-reads the setting itself; the branch here only
@@ -3531,6 +3533,8 @@ pub fn run_with_builder(
         sync::start_pipeline(app_handle_sync).await;
       });
 
+      // Cookie Bot is a cloud service; do not poll or report its state locally.
+      #[cfg(not(feature = "hider-local-unlimited"))]
       tauri::async_runtime::spawn(cookie_bot_exit::run_checks());
       // Launches wait briefly for the first look at remote work done while
       // the app was shut; the session stream's connect ends that wait.
@@ -3562,19 +3566,19 @@ pub fn run_with_builder(
               let _ = cloud_auth::CLOUD_AUTH.request_wayfern_token().await;
             };
             tokio::join!(sync_token_fut, proxy_fut, wayfern_fut);
-  
+
             // Subscribe to remote-session transitions. Started here rather than
             // unconditionally because a signed-out desktop has nothing to stream
             // and would only be refused on a loop; the frontend starts it again
             // through `start_remote_session_events` once the user signs in.
             remote_session::start_session_events(app_handle_cloud.clone());
-  
+
             // A session that finished while this machine was shut, or whose pull
             // ran out of retries offline, leaves a profile blocked from launching
             // with its work still in cloud storage. Signing in is the first moment
             // that pull can succeed, so it is where it is retried.
             remote_handoff::resume_pending_pulls(&app_handle_cloud);
-  
+
             tauri::async_runtime::spawn(cookie_bot::report_enrolled_profiles());
           } else {
             remote_handoff::finish_startup_check();
@@ -3588,7 +3592,9 @@ pub fn run_with_builder(
       #[cfg(feature = "hider-local-unlimited")]
       {
         remote_handoff::finish_startup_check();
-        log::info!("Local edition: cloud token refresh and remote session tasks disabled");
+        log::info!(
+          "Local edition: cloud token refresh and remote session tasks disabled"
+        );
       }
 
       Ok(())

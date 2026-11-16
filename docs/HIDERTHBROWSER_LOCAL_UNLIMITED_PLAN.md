@@ -105,7 +105,7 @@ The local branch has a GitHub Actions workflow at `.github/workflows/hider-platf
 
 ## Local edition network boundary
 
-When the `hider-local-unlimited` Cargo feature is enabled, startup does not launch Donut cloud token/profile refresh, cloud proxy sync, remote-session streaming, cloud Cookie Bot reporting, or the remote MCP bridge. The on-device MCP server and loopback API remain local features. Self-hosted sync is a separate feature and must be tested against its own server configuration; this network boundary does not make the rest of the application universally offline (browser downloads, geolocation databases, and public proxy checks may still access their configured providers).
+When the `hider-local-unlimited` Cargo feature is enabled, startup does not launch Donut cloud token/profile refresh, cloud proxy sync, remote-session streaming, cloud Cookie Bot scheduling/exit monitoring/reporting, or the remote MCP bridge. The on-device MCP server and loopback API remain local features. Self-hosted sync is a separate feature and must be tested against its own server configuration; this network boundary does not make the rest of the application universally offline (browser downloads, geolocation databases, and public proxy checks may still access their configured providers).
 
 An earlier Linux x64 DEB/AppImage-only build completed successfully on GitHub Actions. The current matrix also requests an RPM package. Treat each output as verified only when its own native runner has completed and uploaded it; do not describe installers as production-ready until generated packages have been smoke-tested on target systems.
 
