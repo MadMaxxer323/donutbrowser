@@ -119,7 +119,9 @@ export function getEntitlements(
 ): Entitlements {
   // The HiderTHBROWser local edition has no account or subscription tier.
   // Local browser automation is enabled; remote/cloud capabilities remain off.
-  if (process.env.NEXT_PUBLIC_HIDER_LOCAL_EDITION !== "false") return LOCAL_EDITION;
+  if (process.env.NEXT_PUBLIC_HIDER_LOCAL_EDITION !== "false") {
+    return LOCAL_EDITION;
+  }
 
   if (user?.entitlements) {
     const server = user.entitlements;

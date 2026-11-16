@@ -16,8 +16,8 @@ import { CommandPalette } from "@/components/command-palette";
 import { CommercialTrialModal } from "@/components/commercial-trial-modal";
 import { CookieBotPage, type CookieBotTab } from "@/components/cookie-bot-page";
 import { CookieCopyDialog } from "@/components/cookie-copy-dialog";
-import { CookieManagementDialog } from "@/components/cookie-management-dialog";
 import { BatchLaunchDialog } from "@/components/batch-launch-dialog";
+import { CookieManagementDialog } from "@/components/cookie-management-dialog";
 import { CreateProfileDialog } from "@/components/create-profile-dialog";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 import { DeviceCodeVerifyDialog } from "@/components/device-code-verify-dialog";
@@ -2206,8 +2206,12 @@ export default function Home() {
     profiles: BrowserProfile[];
   } | null>(null);
   const [bulkLaunchDialogOpen, setBulkLaunchDialogOpen] = useState(false);
-  const [bulkLaunchTargets, setBulkLaunchTargets] = useState<BrowserProfile[]>([]);
-  const [pendingBulkLaunchUrl, setPendingBulkLaunchUrl] = useState<string | undefined>();
+  const [bulkLaunchTargets, setBulkLaunchTargets] = useState<BrowserProfile[]>(
+    [],
+  );
+  const [pendingBulkLaunchUrl, setPendingBulkLaunchUrl] = useState<
+    string | undefined
+  >();
   const [isBulkActing, setIsBulkActing] = useState(false);
 
   // Set once the table filters exist: shows and selects the given profiles.
@@ -3740,7 +3744,10 @@ export default function Home() {
           onConfirm={() => {
             if (!pendingBulkAction) return;
             if (pendingBulkAction.action === "run") {
-              void executeBulkRun(pendingBulkAction.profiles, pendingBulkLaunchUrl);
+              void executeBulkRun(
+                pendingBulkAction.profiles,
+                pendingBulkLaunchUrl,
+              );
             } else {
               void executeBulkStop(pendingBulkAction.profiles);
             }

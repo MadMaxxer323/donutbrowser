@@ -40,6 +40,13 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Preserve source line endings on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          git config core.autocrlf false
+          git checkout-index --all --force
+
       - name: Set up pnpm
         uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:

@@ -86,7 +86,9 @@ export function BatchLaunchDialog({
         </DialogHeader>
 
         <div className="space-y-2">
-          <Label htmlFor="batch-launch-url">Shared starting URL (optional)</Label>
+          <Label htmlFor="batch-launch-url">
+            Shared starting URL (optional)
+          </Label>
           <Input
             id="batch-launch-url"
             type="text"
