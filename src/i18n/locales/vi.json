@@ -632,6 +632,14 @@
       "size": "{{width}} × {{height}}",
       "search": "Tìm kích thước màn hình...",
       "notFound": "Không tìm thấy kích thước màn hình."
+    },
+    "launchNow": {
+      "toggle": "Tạo và mở các hồ sơ này ngay lập tức",
+      "urlLabel": "URL sẽ mở trong từng hồ sơ",
+      "urlPlaceholder": "https://example.com",
+      "invalidUrl": "Nhập địa chỉ http:// hoặc https:// hợp lệ.",
+      "hint": "Mỗi hồ sơ được tạo riêng và khởi chạy với URL này.",
+      "submit": "Tạo và khởi chạy"
     }
   },
   "deleteDialog": {
