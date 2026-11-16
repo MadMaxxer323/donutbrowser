@@ -1837,7 +1837,9 @@
     "encryptedRestorePassword": "Cụm mật khẩu sao lưu",
     "encryptedRestoreButton": "Khôi phục thành hồ sơ mới",
     "encryptedRestoreSuccess": "Đã khôi phục {{name}} thành hồ sơ mới",
-    "encryptedRestoreFileType": "Bản sao lưu mã hóa HiderTHBROWser"
+    "encryptedRestoreFileType": "Bản sao lưu mã hóa HiderTHBROWser",
+    "encryptedRestoreWrongPassword": "Cụm mật khẩu không chính xác hoặc bản sao lưu đã bị hỏng.",
+    "encryptedRestoreInvalidArchive": "Tệp này không phải bản sao lưu được mã hóa HiderTHBROWser hợp lệ."
   },
   "extensions": {
     "title": "Tiện ích",
