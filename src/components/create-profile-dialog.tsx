@@ -1171,18 +1171,6 @@ export function CreateProfileDialog({
               label={t("profiles.ephemeral")}
               hint={t("profiles.ephemeralDescription")}
             />
-            {onLaunchProfiles && (
-              <OptionToggle
-                id="launch-after-create"
-                checked={launchAfterCreate}
-                onCheckedChange={setLaunchAfterCreate}
-                disabled={isCreating}
-                animate={animateEntry}
-                icon={<LuGlobe />}
-                label={t("createProfile.launchNow.toggle")}
-                hint={t("createProfile.launchNow.hint")}
-              />
-            )}
             <Popover open={morePopoverOpen} onOpenChange={setMorePopoverOpen}>
               <Tooltip delayDuration={600}>
                 <TooltipTrigger asChild>
@@ -1288,6 +1276,21 @@ export function CreateProfileDialog({
               </PopoverContent>
             </Popover>
           </motion.div>
+
+          {onLaunchProfiles && (
+            <div className="flex w-full">
+              <OptionToggle
+                id="launch-after-create"
+                checked={launchAfterCreate}
+                onCheckedChange={setLaunchAfterCreate}
+                disabled={isCreating}
+                animate={animateEntry}
+                icon={<LuGlobe />}
+                label={t("createProfile.launchNow.toggle")}
+                hint={t("createProfile.launchNow.hint")}
+              />
+            </div>
+          )}
 
           {launchAfterCreate && (
             <motion.div
