@@ -1837,7 +1837,9 @@
     "encryptedRestorePassword": "バックアップ用パスフレーズ",
     "encryptedRestoreButton": "新しいプロファイルとして復元",
     "encryptedRestoreSuccess": "{{name}} を新しいプロファイルとして復元しました",
-    "encryptedRestoreFileType": "HiderTHBROWser 暗号化バックアップ"
+    "encryptedRestoreFileType": "HiderTHBROWser 暗号化バックアップ",
+    "encryptedRestoreWrongPassword": "パスフレーズが正しくないか、バックアップが破損しています。",
+    "encryptedRestoreInvalidArchive": "このファイルは有効な HiderTHBROWser 暗号化バックアップではありません。"
   },
   "extensions": {
     "title": "拡張機能",
