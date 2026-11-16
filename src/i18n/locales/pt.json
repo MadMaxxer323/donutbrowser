@@ -633,6 +633,14 @@
       "size": "{{width}} × {{height}}",
       "search": "Pesquisar tamanhos de tela...",
       "notFound": "Nenhum tamanho de tela encontrado."
+    },
+    "launchNow": {
+      "toggle": "Criar e abrir estes perfis imediatamente",
+      "urlLabel": "URL para abrir em cada perfil",
+      "urlPlaceholder": "https://example.com",
+      "invalidUrl": "Introduza um endereço http:// ou https:// válido.",
+      "hint": "Cada perfil é criado separadamente e iniciado com este URL.",
+      "submit": "Criar e iniciar"
     }
   },
   "deleteDialog": {
