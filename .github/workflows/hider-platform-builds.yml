@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - hiderthbrowser-local
+      - hider-local-mcp
   workflow_dispatch:
 
 permissions:
