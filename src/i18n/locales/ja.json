@@ -632,6 +632,14 @@
       "size": "{{width}} × {{height}}",
       "search": "画面サイズを検索...",
       "notFound": "画面サイズが見つかりません。"
+    },
+    "launchNow": {
+      "toggle": "これらのプロフィールを作成してすぐに開く",
+      "urlLabel": "各プロフィールで開く URL",
+      "urlPlaceholder": "https://example.com",
+      "invalidUrl": "有効な http:// または https:// の URL を入力してください。",
+      "hint": "各プロフィールは個別に作成され、この URL で起動します。",
+      "submit": "作成して起動"
     }
   },
   "deleteDialog": {
