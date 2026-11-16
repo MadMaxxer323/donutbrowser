@@ -5,14 +5,14 @@ import { appimageMetainfo, SHARED_METAINFO } from "./appimage-metainfo.mjs";
 
 const shared = readFileSync(SHARED_METAINFO, "utf8");
 
-test("the AppImage's metainfo is launched by the AppImage's desktop entry", () => {
+test("the AppImage metainfo points at the Hider desktop entry", () => {
   const appimage = appimageMetainfo(shared, "1.2.3", "2026-10-30");
   assert.match(
     appimage,
-    /<launchable type="desktop-id">Donut\.desktop<\/launchable>/,
+    /<launchable type="desktop-id">HiderTHBROWser\.desktop<\/launchable>/,
   );
   assert.doesNotMatch(appimage, /com\.donutbrowser\.DonutBrowser\.desktop/);
-  assert.match(appimage, /<id>com\.donutbrowser\.DonutBrowser<\/id>/);
+  assert.match(appimage, /<id>com\.hiderthbrowser\.HiderTHBROWser<\/id>/);
 });
 
 test("the URL types AppStream 0.15 rejects are left out, the others stay", () => {
