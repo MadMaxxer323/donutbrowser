@@ -33,6 +33,7 @@ const FREE_RUNNING_BROWSERS: usize = 3;
 #[cfg(any(not(feature = "hider-local-unlimited"), test))]
 const SOLO_RUNNING_BROWSERS: usize = 9;
 /// The identity generations are counted under while nobody is signed in.
+#[cfg(any(not(feature = "hider-local-unlimited"), test))]
 const SIGNED_OUT: &str = "local";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
