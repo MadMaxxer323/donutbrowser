@@ -73,6 +73,9 @@ jobs:
       - name: Install JavaScript dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check frontend formatting and types
+        run: pnpm lint:js
+
       - name: Check Linux AppStream metadata
         if: runner.os == 'Linux'
         run: pnpm test:appimage-metainfo

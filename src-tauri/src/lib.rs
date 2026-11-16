@@ -2984,7 +2984,7 @@ pub fn run_with_builder(
         let settings_mgr = settings_manager::SettingsManager::instance();
         match settings_mgr.load_settings() {
           Ok(settings) => {
-            if settings.mcp_remote_enabled {
+            if settings.mcp_remote_enabled && !cfg!(feature = "hider-local-unlimited") {
               // One helper, shared with the sign-in path and the ten-minute
               // reconnect tick, so "when may the bridge open" has exactly one
               // answer. It re-reads the setting itself; the branch here only
@@ -2997,6 +2997,10 @@ pub fn run_with_builder(
                   );
                 }
               });
+            } else if settings.mcp_remote_enabled {
+              log::info!(
+                "MCP remote control is cloud-only and disabled in the local edition"
+              );
             } else {
               log::info!(
                 "MCP remote control disabled mcp_remote_enabled=false"
@@ -3532,48 +3536,60 @@ pub fn run_with_builder(
       // the app was shut; the session stream's connect ends that wait.
       remote_handoff::begin_startup_check();
 
-      // Start cloud auth background refresh loop
-      let app_handle_cloud = app.handle().clone();
-      tauri::async_runtime::spawn(async move {
-        // On startup, refresh sync token, proxy config, and wayfern token in
-        // PARALLEL. Previously they were awaited sequentially, so the wayfern
-        // token request didn't even start until the earlier two API calls had
-        // finished. Wayfern launch can race with this task — a few seconds of
-        // serialized API calls translates directly into a slow first launch
-        // because launch_wayfern blocks waiting for the token to land.
-        // api_call_with_retry handles 401/refresh internally — no direct
-        // refresh_access_token call needed.
-        if cloud_auth::CLOUD_AUTH.is_logged_in().await {
-          // Both calls log their failures through cloud_auth's streaks.
-          let sync_token_fut = async {
-            let _ = cloud_auth::CLOUD_AUTH.get_or_refresh_sync_token().await;
-          };
-          let proxy_fut = async {
-            cloud_auth::CLOUD_AUTH.sync_cloud_proxy().await;
-          };
-          let wayfern_fut = async {
-            let _ = cloud_auth::CLOUD_AUTH.request_wayfern_token().await;
-          };
-          tokio::join!(sync_token_fut, proxy_fut, wayfern_fut);
+      // Account-backed remote features are not started in the local edition.
+      #[cfg(not(feature = "hider-local-unlimited"))]
+      {
+        // Start cloud auth background refresh loop
+        let app_handle_cloud = app.handle().clone();
+        tauri::async_runtime::spawn(async move {
+          // On startup, refresh sync token, proxy config, and wayfern token in
+          // PARALLEL. Previously they were awaited sequentially, so the wayfern
+          // token request didn't even start until the earlier two API calls had
+          // finished. Wayfern launch can race with this task — a few seconds of
+          // serialized API calls translates directly into a slow first launch
+          // because launch_wayfern blocks waiting for the token to land.
+          // api_call_with_retry handles 401/refresh internally — no direct
+          // refresh_access_token call needed.
+          if cloud_auth::CLOUD_AUTH.is_logged_in().await {
+            // Both calls log their failures through cloud_auth's streaks.
+            let sync_token_fut = async {
+              let _ = cloud_auth::CLOUD_AUTH.get_or_refresh_sync_token().await;
+            };
+            let proxy_fut = async {
+              cloud_auth::CLOUD_AUTH.sync_cloud_proxy().await;
+            };
+            let wayfern_fut = async {
+              let _ = cloud_auth::CLOUD_AUTH.request_wayfern_token().await;
+            };
+            tokio::join!(sync_token_fut, proxy_fut, wayfern_fut);
+  
+            // Subscribe to remote-session transitions. Started here rather than
+            // unconditionally because a signed-out desktop has nothing to stream
+            // and would only be refused on a loop; the frontend starts it again
+            // through `start_remote_session_events` once the user signs in.
+            remote_session::start_session_events(app_handle_cloud.clone());
+  
+            // A session that finished while this machine was shut, or whose pull
+            // ran out of retries offline, leaves a profile blocked from launching
+            // with its work still in cloud storage. Signing in is the first moment
+            // that pull can succeed, so it is where it is retried.
+            remote_handoff::resume_pending_pulls(&app_handle_cloud);
+  
+            tauri::async_runtime::spawn(cookie_bot::report_enrolled_profiles());
+          } else {
+            remote_handoff::finish_startup_check();
+          }
+          cloud_auth::CloudAuthManager::start_sync_token_refresh_loop(app_handle_cloud).await;
+        });
+      }
 
-          // Subscribe to remote-session transitions. Started here rather than
-          // unconditionally because a signed-out desktop has nothing to stream
-          // and would only be refused on a loop; the frontend starts it again
-          // through `start_remote_session_events` once the user signs in.
-          remote_session::start_session_events(app_handle_cloud.clone());
-
-          // A session that finished while this machine was shut, or whose pull
-          // ran out of retries offline, leaves a profile blocked from launching
-          // with its work still in cloud storage. Signing in is the first moment
-          // that pull can succeed, so it is where it is retried.
-          remote_handoff::resume_pending_pulls(&app_handle_cloud);
-
-          tauri::async_runtime::spawn(cookie_bot::report_enrolled_profiles());
-        } else {
-          remote_handoff::finish_startup_check();
-        }
-        cloud_auth::CloudAuthManager::start_sync_token_refresh_loop(app_handle_cloud).await;
-      });
+      // The startup check is normally released by the cloud session stream.
+      // No cloud stream is started in this edition, so release it immediately.
+      #[cfg(feature = "hider-local-unlimited")]
+      {
+        remote_handoff::finish_startup_check();
+        log::info!("Local edition: cloud token refresh and remote session tasks disabled");
+      }
 
       Ok(())
     })

@@ -342,9 +342,8 @@ export default function Home() {
     trialStatus?.type === "Expired" &&
     !trialAcknowledged &&
     !crossOsUnlocked;
-  // Bulk run/stop is a paid (browser automation) feature, matching the
-  // /v1/profiles/batch/run API gate. Free/solo users see the bulk Run/Stop
-  // actions disabled with a Pro badge.
+  // Bulk run/stop is available without a subscription in the local edition.
+  // Other builds continue to follow the account's browser-automation entitlement.
   const automationUnlocked = getEntitlements(cloudUser).browserAutomation;
   // The rail needs to show a live run from every page, so the shell subscribes
   // to the shared cookie-bot store too. It is a module singleton, so this costs

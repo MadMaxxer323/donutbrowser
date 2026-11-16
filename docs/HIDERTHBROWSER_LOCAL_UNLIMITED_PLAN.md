@@ -103,7 +103,11 @@ The local branch has a GitHub Actions workflow at `.github/workflows/hider-platf
 - The Linux build requires the WebKitGTK 4.1, GTK, Ayatana app-indicator, XDO, RPM, and AppImage/FUSE build dependencies.
 - This is not a macOS build pipeline. Native Windows/Linux build jobs are the source of truth for platform compilation; a Linux-only developer environment cannot verify the Windows installer.
 
-The current first Linux x64 DEB/AppImage build has completed successfully on GitHub Actions. The extended RPM matrix is being added now; Windows validation remains dependent on the native Windows runner. Do not describe the installers as production-ready until the corresponding native jobs finish successfully and the generated packages are smoke-tested on target systems.
+## Local edition network boundary
+
+When the `hider-local-unlimited` Cargo feature is enabled, startup does not launch Donut cloud token/profile refresh, cloud proxy sync, remote-session streaming, cloud Cookie Bot reporting, or the remote MCP bridge. The on-device MCP server and loopback API remain local features. Self-hosted sync is a separate feature and must be tested against its own server configuration; this network boundary does not make the rest of the application universally offline (browser downloads, geolocation databases, and public proxy checks may still access their configured providers).
+
+An earlier Linux x64 DEB/AppImage-only build completed successfully on GitHub Actions. The current matrix also requests an RPM package. Treat each output as verified only when its own native runner has completed and uploaded it; do not describe installers as production-ready until generated packages have been smoke-tested on target systems.
 
 ## Important repository note
 
