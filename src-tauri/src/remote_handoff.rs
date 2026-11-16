@@ -525,7 +525,9 @@ pub fn reconcile(live_session_ids: &std::collections::HashSet<String>) -> Vec<St
 /// surface. Every local launch path calls this: the two that did not are how a
 /// profile could be opened locally while a host was still writing to it.
 pub fn ensure_local_launch_allowed(profile_id: &str) -> Result<(), String> {
-  if cfg!(feature = "hider-local-unlimited") {
+  #[cfg(all(feature = "hider-local-unlimited", not(test)))]
+  {
+    let _ = profile_id;
     return Ok(());
   }
   match state_for(profile_id) {
@@ -539,7 +541,8 @@ pub fn ensure_local_launch_allowed(profile_id: &str) -> Result<(), String> {
 ///
 /// Existing workers wake at once when the connection or sync settings recover.
 pub fn resume_pending_pulls(app_handle: &tauri::AppHandle) {
-  if cfg!(feature = "hider-local-unlimited") {
+  #[cfg(all(feature = "hider-local-unlimited", not(test)))]
+  {
     let _ = app_handle;
     return;
   }
