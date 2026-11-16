@@ -106,7 +106,6 @@ import { notifySystem } from "@/lib/system-notify";
 import { showErrorToast, showSuccessToast } from "@/lib/toast-utils";
 import { cn } from "@/lib/utils";
 import type {
-  BrowserProfile,
   BrowserReleaseTypes,
   BulkCreateResult,
   ProfileTemplate,
@@ -142,20 +141,6 @@ const defaultWayfernConfig = (): WayfernConfig => ({
     typeof window === "undefined" ? undefined : window.screen.height,
 });
 
-function isValidLaunchUrl(value: string): boolean {
-  try {
-    const url = new URL(value.trim());
-    return (
-      (url.protocol === "http:" || url.protocol === "https:") &&
-      Boolean(url.hostname) &&
-      !url.username &&
-      !url.password
-    );
-  } catch {
-    return false;
-  }
-}
-
 interface CreateProfileDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -177,8 +162,6 @@ interface CreateProfileDialogProps {
     launchHook?: string;
     password?: string;
   }) => Promise<void>;
-  /** Launch freshly-created profiles through the same gated bulk-launch path. */
-  onLaunchProfiles?: (profiles: BrowserProfile[]) => Promise<void> | void;
   selectedGroupId?: string;
   crossOsUnlocked?: boolean;
   /** Names already taken, for the "Profile N" the name field starts with. */
@@ -189,7 +172,6 @@ export function CreateProfileDialog({
   isOpen,
   onClose,
   onCreateProfile,
-  onLaunchProfiles,
   selectedGroupId,
   crossOsUnlocked = false,
   profileNames = [],
@@ -234,9 +216,6 @@ export function CreateProfileDialog({
   const [appliedTemplate, setAppliedTemplate] =
     useState<ProfileTemplate | null>(null);
   const [count, setCount] = useState(1);
-  const [launchAfterCreate, setLaunchAfterCreate] = useState(false);
-  const [launchUrl, setLaunchUrl] = useState("");
-  const launchUrlIsValid = isValidLaunchUrl(launchUrl);
   const [progress, setProgress] = useState<{
     done: number;
     total: number;
@@ -438,8 +417,7 @@ export function CreateProfileDialog({
     hourlyCapReached ||
     closeABrowser ||
     batchRefused ||
-    !dnsServerValid ||
-    (launchAfterCreate && !launchUrlIsValid);
+    !dnsServerValid;
   const selectedVpn = selectedProxyId?.startsWith("vpn-")
     ? vpnConfigs.find((vpn) => vpn.id === selectedProxyId.slice(4))
     : undefined;
@@ -485,8 +463,6 @@ export function CreateProfileDialog({
     setDnsServer("");
     setStartPages("");
     setLaunchHook("");
-    setLaunchAfterCreate(false);
-    setLaunchUrl("");
     setSelectedExtensionGroupId(undefined);
     setReleaseTypes({});
     setIsLoadingReleaseTypes(false);
@@ -518,9 +494,7 @@ export function CreateProfileDialog({
       extension_group_id: selectedExtensionGroupId ?? null,
       dns_blocklist: dnsBlocklist || null,
       dns_server: dnsServer.trim() || null,
-      start_urls: launchAfterCreate
-        ? [launchUrl.trim()]
-        : startPagesFromText(startPages),
+      start_urls: startPagesFromText(startPages),
       launch_hook: launchHook.trim() || null,
       ephemeral,
       wayfern_config: wayfernConfig,
@@ -638,17 +612,12 @@ export function CreateProfileDialog({
             error: translateBackendError(t, result.error),
           })
         : t("templates.created", { count: result.created.length });
-      const shouldLaunchCreatedProfiles =
-        launchAfterCreate && Boolean(onLaunchProfiles) && result.created.length > 0;
       if (result.error) showErrorToast(outcome);
       else showSuccessToast(outcome);
       if (count > 1) {
         void notifySystem({ title: t("templates.notifyTitle"), body: outcome });
       }
       handleClose();
-      if (shouldLaunchCreatedProfiles && onLaunchProfiles) {
-        await onLaunchProfiles(result.created);
-      }
     } catch (error) {
       showErrorToast(
         t("errors.createProfileFailed", {
@@ -682,7 +651,7 @@ export function CreateProfileDialog({
       browserWait.request();
       return;
     }
-    if (many || appliedTemplate || launchAfterCreate) {
+    if (many || appliedTemplate) {
       await createFromSettings();
       return;
     }
@@ -772,13 +741,7 @@ export function CreateProfileDialog({
       }),
     });
   }
-  // The local edition exposes an effectively-unbounded quota sentinel. Do not
-  // display that integer as a user-facing "profiles left" number.
-  if (
-    allowance !== null &&
-    allowance.remaining > 0 &&
-    allowance.remaining < Number.MAX_SAFE_INTEGER
-  ) {
+  if (allowance !== null && allowance.remaining > 0) {
     countHint.push({
       text: t("templates.allowanceLeft", { count: allowance.remaining }),
       limit: maxCount < MAX_BULK_CREATE,
@@ -810,9 +773,7 @@ export function CreateProfileDialog({
       disabled={isCreateDisabled}
       className="h-9 rounded-md px-4 transition-[opacity,box-shadow,transform] duration-200"
     >
-      {launchAfterCreate
-        ? t("createProfile.launchNow.submit")
-        : t("common.buttons.create")}
+      {t("common.buttons.create")}
     </LoadingButton>
   );
 
@@ -1165,18 +1126,6 @@ export function CreateProfileDialog({
               label={t("profiles.ephemeral")}
               hint={t("profiles.ephemeralDescription")}
             />
-            {onLaunchProfiles && (
-              <OptionToggle
-                id="launch-after-create"
-                checked={launchAfterCreate}
-                onCheckedChange={setLaunchAfterCreate}
-                disabled={isCreating}
-                animate={animateEntry}
-                icon={<LuGlobe />}
-                label={t("createProfile.launchNow.toggle")}
-                hint={t("createProfile.launchNow.hint")}
-              />
-            )}
             <Popover open={morePopoverOpen} onOpenChange={setMorePopoverOpen}>
               <Tooltip delayDuration={600}>
                 <TooltipTrigger asChild>
@@ -1282,40 +1231,6 @@ export function CreateProfileDialog({
               </PopoverContent>
             </Popover>
           </motion.div>
-
-          {launchAfterCreate && (
-            <motion.div
-              className="space-y-1.5 rounded-xl border border-border bg-foreground/[0.025] p-3"
-              initial={animateEntry ? { opacity: 0, y: -4 } : false}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: MOTION_DURATION.fast, ease: MOTION_EASE_OUT }}
-            >
-              <Label htmlFor="launch-after-create-url" className={FIELD_LABEL_CLASS}>
-                {t("createProfile.launchNow.urlLabel")}
-              </Label>
-              <Input
-                id="launch-after-create-url"
-                type="url"
-                variant="soft"
-                value={launchUrl}
-                onChange={(event) => setLaunchUrl(event.target.value)}
-                placeholder={t("createProfile.launchNow.urlPlaceholder")}
-                autoComplete="url"
-                spellCheck={false}
-                disabled={isCreating}
-                aria-invalid={Boolean(launchUrl.trim()) && !launchUrlIsValid}
-                className="font-mono text-xs"
-              />
-              {!launchUrlIsValid && launchUrl.trim() && (
-                <p role="alert" className="text-xs text-destructive-text">
-                  {t("createProfile.launchNow.invalidUrl")}
-                </p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                {t("createProfile.launchNow.hint")}
-              </p>
-            </motion.div>
-          )}
 
           {(ephemeral || enablePassword) && <EphemeralStorageNotice />}
 
