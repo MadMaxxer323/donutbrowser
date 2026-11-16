@@ -141,6 +141,33 @@ interface EncryptedBackupSummary {
   networkSettingsRestored: boolean;
 }
 
+function encryptedBackupErrorTitle(
+  t: Parameters<typeof translateBackendError>[0],
+  error: unknown,
+): string {
+  const raw = error instanceof Error ? error.message : String(error);
+  if (raw.includes("LOCAL_BACKUP_PROFILE_UNLOCKED")) {
+    return t("profileTransfer.encryptedBackupLockFirst");
+  }
+  if (raw.includes("LOCAL_BACKUP_PROFILE_RUNNING")) {
+    return t("profileTransfer.encryptedBackupCloseBrowser");
+  }
+  if (raw.includes("LOCAL_BACKUP_PASSWORD_TOO_SHORT")) {
+    return t("profileTransfer.encryptedBackupTooShort");
+  }
+  if (raw.includes("LOCAL_BACKUP_PASSWORD_OR_DATA_INVALID")) {
+    return t("profileTransfer.encryptedRestoreWrongPassword");
+  }
+  if (
+    raw.includes("LOCAL_BACKUP_INVALID_ARCHIVE") ||
+    raw.includes("LOCAL_BACKUP_INTEGRITY_FAILED") ||
+    raw.includes("LOCAL_BACKUP_VERSION_OR_LIMIT_UNSUPPORTED")
+  ) {
+    return t("profileTransfer.encryptedRestoreInvalidArchive");
+  }
+  return translateBackendError(t, error);
+}
+
 /**
  * Passphrase-encrypted full profile snapshot. Restore always creates a new
  * profile and deliberately clears machine-specific network references.
@@ -197,7 +224,7 @@ export function EncryptedProfileBackupSection({
       } catch (error) {
         showToast({
           type: "error",
-          title: translateBackendError(t, error),
+          title: encryptedBackupErrorTitle(t, error),
         });
         return;
       }
@@ -236,7 +263,7 @@ export function EncryptedProfileBackupSection({
     } catch (error) {
       showToast({
         type: "error",
-        title: translateBackendError(t, error),
+        title: encryptedBackupErrorTitle(t, error),
       });
     } finally {
       setIsCreating(false);
@@ -263,7 +290,7 @@ export function EncryptedProfileBackupSection({
     } catch (error) {
       showToast({
         type: "error",
-        title: translateBackendError(t, error),
+        title: encryptedBackupErrorTitle(t, error),
       });
     } finally {
       setIsChoosing(false);
@@ -300,7 +327,7 @@ export function EncryptedProfileBackupSection({
     } catch (error) {
       showToast({
         type: "error",
-        title: translateBackendError(t, error),
+        title: encryptedBackupErrorTitle(t, error),
       });
     } finally {
       setIsRestoring(false);
