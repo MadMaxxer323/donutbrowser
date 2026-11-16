@@ -193,7 +193,9 @@ const SERVER_WEBSITE: &str = "https://github.com/MadMaxxer323/donutbrowser";
 
 #[cfg(not(feature = "hider-local-unlimited"))]
 const SERVER_NAME: &str = "donut-browser";
+#[cfg(not(feature = "hider-local-unlimited"))]
 const SERVER_TITLE: &str = "Donut Browser";
+#[cfg(not(feature = "hider-local-unlimited"))]
 const SERVER_WEBSITE: &str = "https://donutbrowser.com";
 const SERVER_VERSION: &str = env!("CARGO_PKG_VERSION");
 
