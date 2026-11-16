@@ -1,185 +1,130 @@
-<div align="center">
-  <img src="assets/logo.png" alt="Donut Browser Logo" width="150">
-  <h1>Donut Browser</h1>
-  <strong>Open Source Anti-Detect Browser</strong>
-  <br>
-  <a href="https://donutbrowser.com">donutbrowser.com</a>
-</div>
-<br>
+# HiderTHBROWser
 
-<p align="center">
-  <a style="text-decoration: none;" href="https://github.com/donutbrowser/donutbrowser/releases/latest" target="_blank"><img alt="GitHub release" src="https://img.shields.io/github/v/release/donutbrowser/donutbrowser">
-  </a>
-  <a style="text-decoration: none;" href="https://github.com/donutbrowser/donutbrowser/issues" target="_blank">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" alt="PRs Welcome">
-  </a>
-  <a style="text-decoration: none;" href="https://github.com/donutbrowser/donutbrowser/blob/main/LICENSE" target="_blank">
-    <img src="https://img.shields.io/badge/license-AGPL--3.0-blue.svg" alt="License">
-  </a>
-  <a style="text-decoration: none;" href="https://github.com/donutbrowser/donutbrowser/network/members" target="_blank">
-    <img src="https://img.shields.io/github/forks/donutbrowser/donutbrowser?style=social" alt="GitHub forks">
-  </a>
-</p>
+**Local-first multi-profile desktop browser for Windows 10/11 and Linux.**
 
-<p align="center">
-  <img alt="Donut Browser starts three profiles. Each one opens its own browser window with the profile name in the address bar, and shows websites a different device." src="assets/readme/hero.svg" width="100%">
-</p>
+This repository is the HiderTHBROWser development fork of Donut Browser. It retains the upstream Tauri + Next.js + Rust architecture and its Wayfern engine integration. Hider-specific local-edition changes are developed on the `hiderthbrowser-local` branch.
 
-<p align="center">
-  Unlimited browser profiles on one computer. Each one shows websites a different device,<br>
-  keeps its own cookies, extensions and proxy, and stays on your machine.
-</p>
+> **Important:** HiderTHBROWser is not yet a completed or verified release. The Windows and Linux build workflow is being added; installer artifacts become available only after GitHub Actions finishes successfully.
 
-## Keep every account separate
+## Platform targets
 
-Websites link accounts that come from the same device, and then one ban can take all of them. In Donut, each account runs in its own profile with its own fingerprint, cookies and proxy or VPN, so every site sees a different device.
-
-<img alt="In an ordinary browser, four accounts show websites the same device, so they are linked and one ban takes down all four. In Donut Browser, each account shows a different device, so the accounts stay separate." src="assets/readme/linking.svg" width="100%">
-
-The fingerprints come from [Wayfern](https://wayfern.com), a privacy-focused Chromium fork that sets them inside the engine, not with scripts on the page.
-
-## Your data stays on your device
-
-<img alt="Profiles, with their cookies, logins, history and fingerprints, stay on your device. Optional sync sends only data that is encrypted with your password. The app sends no telemetry." src="assets/readme/local.svg" width="100%">
-
-- No account needed: profiles, cookies, logins and history live on your computer.
-- Zero telemetry: the app sends no tracking or analytics.
-- Lock a profile with a password, or make it ephemeral so that nothing is left when it closes.
-- Sync is optional and end-to-end encrypted with a password only you know. Use Donut Sync or [run your own server](https://donutbrowser.com/docs/self-hosting).
-
-## Automate with code or with AI agents
-
-<img alt="Start a profile from the local REST API and connect Playwright to it over CDP, or let your AI agent work with profiles over remote MCP." src="assets/readme/automation.svg" width="100%">
-
-Start any profile from the local REST API on `127.0.0.1:10108`, then connect Playwright, Puppeteer or Selenium to it over CDP. Or connect Claude, Cursor, Codex or another MCP client over remote MCP, and watch what each agent does. Browser automation and remote MCP come with the paid plans. See the [quickstart](https://donutbrowser.com/docs/quickstart), [Playwright with Wayfern](https://donutbrowser.com/docs/wayfern) and [MCP](https://donutbrowser.com/docs/mcp) guides.
-
-## Features
-
-- Unlimited browser profiles: each fully isolated with its own fingerprint, cookies, extensions, and data
-- Anti-detect Chromium engine: powered by [Wayfern](https://wayfern.com), a privacy-focused Chromium fork whose fingerprint spoofing is not detected by Cloudflare, reCaptcha v3, or other browser fingerprinting and anti-bot services
-- DNS AdBlocker: block ads, trackers, and other unwanted content with per-profile DNS blocking
-- Proxy support: HTTP, HTTPS, SOCKS4, SOCKS5 per profile, with dynamic proxy URLs
-- VPN support: WireGuard configs per profile
-- REST API & remote MCP: a local REST API and a remote [Model Context Protocol](https://modelcontextprotocol.io) server for Claude, Cursor, automation tools and custom workflows
-- Profile groups: organize profiles and apply bulk settings
-- Import profiles: migrate from Chrome, Edge, Brave, or other Chromium browsers
-- Cookie & extension management: import/export cookies, manage extensions per profile
-- Default browser: set Donut as your default browser and choose which profile opens each link
-- Cloud sync: sync profiles, proxies, and groups across devices (self-hostable)
-- E2E encryption: optional end-to-end encrypted sync with a password only you know
-- Zero telemetry: no tracking or device fingerprinting
-
-## Install
-
-<!-- install-links-start -->
-### macOS
-
-[Download DMG (Apple Silicon)](https://github.com/donutbrowser/donutbrowser/releases/download/v0.36.0/Donut_0.36.0_aarch64.dmg)
-
-Or install via Homebrew:
-
-```bash
-brew install --cask donut
-```
-
-### Windows
-
-[Download Windows Installer (x64)](https://github.com/donutbrowser/donutbrowser/releases/download/v0.36.0/Donut_0.36.0_x64-setup.exe) · [Portable (x64)](https://github.com/donutbrowser/donutbrowser/releases/download/v0.36.0/Donut_0.36.0_x64-portable.zip)
-
-### Linux
-
-| Format | x86_64 | ARM64 |
+| Platform | Package target | Build status |
 |---|---|---|
-| **deb** | [Download](https://github.com/donutbrowser/donutbrowser/releases/download/v0.36.0/Donut_0.36.0_amd64.deb) | [Download](https://github.com/donutbrowser/donutbrowser/releases/download/v0.36.0/Donut_0.36.0_arm64.deb) |
-| **rpm** | [Download](https://github.com/donutbrowser/donutbrowser/releases/download/v0.36.0/Donut-0.36.0-1.x86_64.rpm) | [Download](https://github.com/donutbrowser/donutbrowser/releases/download/v0.36.0/Donut-0.36.0-1.aarch64.rpm) |
-| **AppImage** | [Download](https://github.com/donutbrowser/donutbrowser/releases/download/v0.36.0/Donut_0.36.0_amd64.AppImage) | [Download](https://github.com/donutbrowser/donutbrowser/releases/download/v0.36.0/Donut_0.36.0_aarch64.AppImage) |
-<!-- install-links-end -->
+| Windows 10/11 x64 | NSIS `.exe` installer | CI workflow added; build result pending |
+| Linux x64 (Debian/Ubuntu) | `.deb` | CI workflow added; build result pending |
+| Linux x64 (general desktop) | AppImage | CI workflow added; build result pending |
+| Linux ARM64 | Not in this initial workflow | Not yet configured |
+| macOS | Not in this initial workflow | Not currently targeted |
 
-Or install via package manager:
+### Get build artifacts
+
+Every push to `hiderthbrowser-local` triggers the **HiderTHBROWser Windows and Linux Builds** workflow.
+
+1. Open the [Actions tab](https://github.com/MadMaxxer323/donutbrowser/actions/workflows/hider-platform-builds.yml).
+2. Open the newest successful run.
+3. Download `HiderTHBROWser-Windows-x64` for the Windows installer, or `HiderTHBROWser-Linux-x64` for the Linux `.deb` and AppImage packages.
+
+CI artifacts are temporary and are retained for 14 days. They are not signed release downloads.
+
+## Current local-edition direction
+
+The default Cargo feature `hider-local-unlimited` is enabled in this branch. It removes subscription-based caps on local profile generation, concurrent browser seats, and local REST/MCP automation requests.
+
+"Unlimited" here means **no Hider subscription quota on local operations**. Real usage remains bounded by the computer's RAM, CPU, disk space, browser-engine support, and operating-system limits. The API remains authenticated and bound to loopback; resource protection and input validation must not be removed.
+
+### Local features inherited from the upstream codebase
+
+- Wayfern Chromium browser management and local CDP integration.
+- Local browser profiles, profile groups, import/export, and persistent browser data.
+- Per-profile fingerprint configuration and the engine's local identity APIs where supported.
+- HTTP, HTTPS, SOCKS4, SOCKS5, and WireGuard profile routing functionality inherited from upstream.
+- Local REST API on `127.0.0.1:10108`.
+- Browser-control MCP tool engine.
+- Cookie and extension management, DNS filtering, bookmarks, and profile utilities.
+
+Availability of a feature in source code does not by itself mean it has been tested or that all upstream service integrations work in this local edition.
+
+## Cloud-dependent features deliberately excluded from the local edition
+
+- Donut cloud backup and cloud profile synchronization.
+- Donut-hosted remote MCP relay and remote browser execution.
+- The upstream Cookie Bot schedule and remote execution service.
+- Team collaboration, SSO, hosted support, cloud hours, and subscription-plan services.
+
+The upstream Cookie Bot source states that its schedules and actual runs are owned by the Donut cloud API and remote hosts. This branch does not pretend that remote service is available offline. A separate local scheduler or local cookie-consent/QA workflow can be implemented as a replacement.
+
+Wayfern's same-device identity generation is performed by the local browser engine. The upstream code also documents that cross-OS identity generation may require a Wayfern token obtained from the Donut account service. HiderTHBROWser does not fake or bypass that authorization; cross-OS identity generation remains unavailable until a separately authorized local engine option exists.
+
+## Build from source
+
+### Requirements
+
+- Windows 10/11 x64 or Linux x64 (Debian/Ubuntu dependencies are used by CI).
+- Node.js version specified in `.node-version`.
+- pnpm and the stable Rust toolchain.
+- Platform build prerequisites for Tauri 2 and WebKitGTK on Linux.
+
+### Install dependencies
 
 ```bash
-curl -fsSL https://donutbrowser.com/install.sh | sh
+pnpm install --frozen-lockfile
 ```
 
-<details>
-<summary>Troubleshooting AppImage</summary>
+### Windows installer
 
-If the AppImage segfaults on launch, install libfuse2 (`sudo apt install libfuse2` / `yay -S libfuse2` / `sudo dnf install fuse-libs`), or bypass FUSE entirely:
-
-```bash
-APPIMAGE_EXTRACT_AND_RUN=1 ./Donut.Browser_x.x.x_amd64.AppImage
-```
-
-If that gives an EGL display error, add `WEBKIT_DISABLE_DMABUF_RENDERER=1` or `GDK_BACKEND=x11` to the command above. If issues persist, the .deb and .rpm packages are more reliable.
-
-</details>
-
-### Flatpak and Snap
-
-Releases include an x86_64 Flatpak bundle and a Snap, built from the `.deb` and tested in their sandboxes by the [Linux Packages](https://github.com/donutbrowser/donutbrowser/actions/workflows/linux-packages.yml) workflow. Download `Donut_*_x86_64.flatpak` or `Donut_*_amd64.snap` from the [releases](https://github.com/donutbrowser/donutbrowser/releases) (the nightly has them already) and install it:
-
-```bash
-flatpak install --user Donut_*_x86_64.flatpak
-sudo snap install --dangerous Donut_*_amd64.snap
-```
-
-The Snap leaves the microphone, the camera and the keyring (used by profile import) disconnected until you run `sudo snap connect donutbrowser:audio-record`, `donutbrowser:camera` or `donutbrowser:password-manager-service`. The Flatpak cannot change the default browser, so choose Donut in your system settings instead.
-
-### Windows portable
-
-The portable version keeps its profiles, logins and settings in the `data` folder next to `Donut.exe`, and updates itself like the installed app. An update does not change `data`, `cache` or `logs`.
-
-Portable copies of v0.35.5 and older cannot update themselves. To update one, quit Donut and run this in PowerShell with the path of your portable folder:
+Run in PowerShell or a Windows developer terminal:
 
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/donutbrowser/donutbrowser/main/scripts/update-portable.ps1))) -Path "D:\Donut-Portable"
+pnpm tauri build --bundles nsis
 ```
 
-Or download [update-portable.ps1](scripts/update-portable.ps1), right-click it and select **Run with PowerShell**. It asks for the folder.
+The NSIS installer is written under:
 
-### Nix
+```text
+src-tauri/target/release/bundle/nsis/
+```
+
+### Linux DEB and AppImage
+
+Install the Tauri/WebKitGTK development libraries required by the Linux build, then run:
 
 ```bash
-nix run github:donutbrowser/donutbrowser#release-start
+pnpm test:appimage-metainfo
+pnpm tauri build --bundles deb,appimage
 ```
 
-## Self-Hosting Sync
+Packages are written under:
 
-Run your own sync server to sync profiles, proxies, and groups across devices for free. See the [Self-Hosting Donut Sync guide](https://donutbrowser.com/docs/self-hosting) for Docker-based setup instructions.
+```text
+src-tauri/target/release/bundle/deb/
+src-tauri/target/release/bundle/appimage/
+```
 
-## Contributing
+The AppImage can require FUSE 2 compatibility on some distributions. If needed, try:
 
-Donut Browser is built by the people who use it, and plenty of the most useful help involves no code at all.
+```bash
+APPIMAGE_EXTRACT_AND_RUN=1 ./HiderTHBROWser_*.AppImage
+```
 
-- Tell other people about Donut. Word of mouth is how most users find the project, so talking about it is a real contribution.
-- Report bugs and request features in [GitHub Issues](https://github.com/donutbrowser/donutbrowser/issues).
-- Answer questions in [GitHub Discussions](https://github.com/donutbrowser/donutbrowser/discussions).
-- Fix and improve translations in `src/i18n/locales`.
-- Write code. Start with [CONTRIBUTING.md](CONTRIBUTING.md).
-- Star the repo so more people see it.
+## Local edition implementation status
 
-## Star History
+| Capability | Status |
+|---|---|
+| Subscription-free local profile generation | Implemented in local-edition build path; CI validation pending |
+| Remove subscription-based running-browser seat limit | Implemented in local-edition build path; CI validation pending |
+| Local REST/MCP automation without a paid account | Entitlement and quota paths changed; end-to-end validation pending |
+| Local Wayfern browser engine integration | Present from upstream; runtime download/platform verification pending |
+| Cross-OS identity without Wayfern token | Not available |
+| Cloud profile backup and sync | Excluded |
+| Cloud Cookie Bot schedule/remote execution | Excluded |
+| Local Cookie Bot replacement scheduler | Planned |
+| Encrypted local full-profile backup/restore | Planned |
+| Dedicated local MCP stdio transport | Needs verification and possible implementation |
+| Windows installer | Workflow added; build pending |
+| Linux DEB and AppImage | Workflow added; build pending |
 
-<a href="https://gitdebt.com/donutbrowser/donutbrowser?ref=readme">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.gitdebt.com/api/repos/donutbrowser/donutbrowser/chart.svg?theme=dark&animate=1" />
-    <img alt="Cumulative GitHub stars for donutbrowser/donutbrowser over time" src="https://api.gitdebt.com/api/repos/donutbrowser/donutbrowser/chart.svg?theme=light&animate=1" />
-  </picture>
-</a>
+## License and third-party components
 
-## Contributors
+This repository is derived from Donut Browser and remains under the upstream **GNU Affero General Public License v3.0 (AGPL-3.0)**. Do not remove upstream copyright notices or relicense the complete derivative as MIT. Any redistribution of modified binaries or network-accessible modified versions must comply with the AGPL and include corresponding source as required.
 
-<a href="https://gitdebt.com/donutbrowser/donutbrowser?ref=readme">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.gitdebt.com/api/repos/donutbrowser/donutbrowser/stats/contributors.svg?theme=dark&animate=1" />
-    <img alt="Everyone who has landed commits in donutbrowser/donutbrowser, ranked by commit count" src="https://api.gitdebt.com/api/repos/donutbrowser/donutbrowser/stats/contributors.svg?theme=light&animate=1" />
-  </picture>
-</a>
-
-## Contact
-
-For urgent questions or security vulnerability reports, email [contact@donutbrowser.com](mailto:contact@donutbrowser.com).
-
-## License
-
-This project is licensed under the AGPL-3.0 License. See the [LICENSE](LICENSE) file for details.
+Wayfern, Xray-core, Tauri, and other bundled components have their own licenses and distribution conditions. Verify those terms before publishing installers. The HiderTHBROWser name and branding do not grant rights to third-party trademarks.
