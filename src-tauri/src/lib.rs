@@ -209,6 +209,7 @@ mod legacy_autostart;
 mod log_redaction;
 pub mod log_streak;
 mod log_viewer;
+mod local_profile_backup;
 mod platform_browser;
 mod portable_update;
 mod process_report;
@@ -3786,6 +3787,8 @@ pub fn run_with_builder(
       profile::portable::export_profile,
       profile::portable::preview_profile_archive,
       profile::portable::import_profile_archive,
+      local_profile_backup::create_local_profile_backup,
+      local_profile_backup::restore_local_profile_backup,
       launch_gate::ack_launch_gate,
       window_decorations::get_window_decoration_layout,
       validate_vless_uri,
