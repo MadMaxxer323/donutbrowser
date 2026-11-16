@@ -153,6 +153,10 @@ pub struct McpRequest {
 
 const PROTOCOL_VERSION: &str = "2025-11-25";
 
+#[cfg(feature = "hider-local-unlimited")]
+const INITIALIZE_INSTRUCTIONS: &str = "HiderTHBROWser local MCP server. Use tools/list to discover local browser tools. This server controls profiles and browser sessions on this computer only. Respect the user's instructions and site permissions; do not submit forms, purchase, publish, or make account changes unless the user explicitly asks. Cloud backup/sync, remote browser execution, the cloud Cookie Bot, team locks, and cloud-hosted recipes are not available in this local edition. Call get_human_updates when you start and between steps, report_progress during longer jobs, ask_human when unsure, and request_human_help when a page needs a person. A call refused with AGENT_PAUSED or PROFILE_HELD_BY_HUMAN means the person is in control; do not retry until get_human_updates shows the pause or hold is gone.";
+
+#[cfg(not(feature = "hider-local-unlimited"))]
 const INITIALIZE_INSTRUCTIONS: &str = "Donut Browser MCP server. Use tools/list to discover the browser tools. A person watches your work in Donut: call get_human_updates when you start and between steps, report_progress during longer jobs, ask_human when you are unsure, and request_human_help when a page needs a person. When a Donut tool fails in a way you cannot explain, or you need something it cannot do, tell the Donut team with send_feedback. A call refused with AGENT_PAUSED or PROFILE_HELD_BY_HUMAN means the person is in control; do not retry it until get_human_updates shows the pause or hold is gone.";
 
 const PLAN_WITHOUT_AUTOMATION: &str = " This account's plan does not include browser automation: tools that launch, drive or read a browser are refused with PLAN_REQUIRED. Managing profiles, groups, proxies, VPNs and extensions works.";
@@ -180,9 +184,20 @@ fn negotiate_protocol_version(requested: Option<&str>) -> &'static str {
     None => PROTOCOL_VERSION,
   }
 }
+#[cfg(feature = "hider-local-unlimited")]
+const SERVER_NAME: &str = "hiderthbrowser";
+#[cfg(feature = "hider-local-unlimited")]
+const SERVER_TITLE: &str = "HiderTHBROWser";
+#[cfg(feature = "hider-local-unlimited")]
+const SERVER_WEBSITE: &str = "https://github.com/MadMaxxer323/donutbrowser";
+
+#[cfg(not(feature = "hider-local-unlimited"))]
 const SERVER_NAME: &str = "donut-browser";
+#[cfg(not(feature = "hider-local-unlimited"))]
 const SERVER_TITLE: &str = "Donut Browser";
+#[cfg(not(feature = "hider-local-unlimited"))]
 const SERVER_WEBSITE: &str = "https://donutbrowser.com";
+
 const SERVER_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// What a tool does to the world, as MCP tool annotations say it.
