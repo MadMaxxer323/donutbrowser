@@ -1837,7 +1837,9 @@
     "encryptedRestorePassword": "백업 암호",
     "encryptedRestoreButton": "새 프로필로 복원",
     "encryptedRestoreSuccess": "{{name}}을(를) 새 프로필로 복원했습니다",
-    "encryptedRestoreFileType": "HiderTHBROWser 암호화 백업"
+    "encryptedRestoreFileType": "HiderTHBROWser 암호화 백업",
+    "encryptedRestoreWrongPassword": "암호가 올바르지 않거나 백업이 손상되었습니다.",
+    "encryptedRestoreInvalidArchive": "이 파일은 유효한 HiderTHBROWser 암호화 백업이 아닙니다."
   },
   "extensions": {
     "title": "확장 프로그램",
