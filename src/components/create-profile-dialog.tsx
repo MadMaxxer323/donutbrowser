@@ -1148,7 +1148,7 @@ export function CreateProfileDialog({
                   setEphemeral(false);
                 } else clearPassword();
               }}
-              disabled={isCreating || many}
+              disabled={isCreating || many || launchAfterCreate}
               animate={animateEntry}
               icon={enablePassword ? <LuLock /> : <LuLockOpen />}
               label={t("profilePassword.fields.password")}
@@ -1282,7 +1282,10 @@ export function CreateProfileDialog({
               <OptionToggle
                 id="launch-after-create"
                 checked={launchAfterCreate}
-                onCheckedChange={setLaunchAfterCreate}
+                onCheckedChange={(checked) => {
+                  setLaunchAfterCreate(checked);
+                  if (checked) clearPassword();
+                }}
                 disabled={isCreating}
                 animate={animateEntry}
                 icon={<LuGlobe />}
