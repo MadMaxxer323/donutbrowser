@@ -632,6 +632,14 @@
       "size": "{{width}} × {{height}}",
       "search": "搜索屏幕尺寸...",
       "notFound": "未找到屏幕尺寸。"
+    },
+    "launchNow": {
+      "toggle": "立即创建并打开这些配置文件",
+      "urlLabel": "每个配置文件中打开的网址",
+      "urlPlaceholder": "https://example.com",
+      "invalidUrl": "请输入有效的 http:// 或 https:// 地址。",
+      "hint": "每个配置文件都会单独创建，并使用此网址启动。",
+      "submit": "创建并启动"
     }
   },
   "deleteDialog": {
