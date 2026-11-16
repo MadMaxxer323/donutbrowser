@@ -1378,6 +1378,7 @@ impl CloudAuthManager {
     // and authenticated; cloud relays and remote execution are not enabled.
     #[cfg(feature = "hider-local-unlimited")]
     {
+      let _ = self;
       return true;
     }
 
@@ -1443,6 +1444,7 @@ impl CloudAuthManager {
     // authentication, loopback binding and browser resource limits still apply.
     #[cfg(feature = "hider-local-unlimited")]
     {
+      let _ = self;
       return None;
     }
 
