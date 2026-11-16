@@ -60,6 +60,14 @@ fn backend_error(code: &str) -> String {
   crate::backend_error(code)
 }
 
+async fn run_backup_blocking<T: Send + 'static>(
+  work: impl FnOnce() -> Result<T, String> + Send + 'static,
+) -> Result<T, String> {
+  crate::profile::manager::run_blocking(work)
+    .await
+    .map_err(|error| error.to_string())?
+}
+
 fn validate_password(password: &str) -> Result<(), String> {
   if password.as_bytes().len() < PASSWORD_MIN_BYTES {
     return Err(serde_json::json!({
@@ -281,6 +289,10 @@ fn decrypt_stream_from_zip<R: Read, W: Write>(
     input.read_exact(&mut length).map_err(|_| backend_error("LOCAL_BACKUP_TRUNCATED"))?;
     let length = u32::from_le_bytes(length) as usize;
     if length == 0 {
+      let mut trailing = [0u8; 1];
+      if input.read(&mut trailing).map_err(|e| e.to_string())? != 0 {
+        return Err(backend_error("LOCAL_BACKUP_CHUNK_INVALID"));
+      }
       break;
     }
     if length > CHUNK_BYTES + 64 {
@@ -334,6 +346,17 @@ pub async fn create_local_profile_backup(
   destination: String,
   password: String,
 ) -> Result<ProfileBackupSummary, String> {
+  run_backup_blocking(move || {
+    create_local_profile_backup_blocking(profile_id, destination, password)
+  })
+  .await
+}
+
+fn create_local_profile_backup_blocking(
+  profile_id: String,
+  destination: String,
+  password: String,
+) -> Result<ProfileBackupSummary, String> {
   validate_password(&password)?;
   let destination = validate_backup_path(&destination)?;
   let profile = ProfileManager::instance()
@@ -358,6 +381,13 @@ pub async fn create_local_profile_backup(
   let data_root = profile_root.join("profile");
   if !profile_root.is_dir() {
     return Err(backend_error("PROFILE_NOT_FOUND"));
+  }
+  if data_root.exists() && fs::symlink_metadata(&data_root)
+    .map_err(|e| e.to_string())?
+    .file_type()
+    .is_symlink()
+  {
+    return Err(backend_error("LOCAL_BACKUP_SYMLINK_NOT_ALLOWED"));
   }
 
   let mut files = Vec::new();
@@ -475,6 +505,13 @@ pub async fn create_local_profile_backup(
 /// are retained.
 #[tauri::command]
 pub async fn restore_local_profile_backup(
+  source: String,
+  password: String,
+) -> Result<ProfileBackupSummary, String> {
+  run_backup_blocking(move || restore_local_profile_backup_blocking(source, password)).await
+}
+
+fn restore_local_profile_backup_blocking(
   source: String,
   password: String,
 ) -> Result<ProfileBackupSummary, String> {
@@ -657,11 +694,37 @@ mod tests {
   }
 
   #[test]
+  fn archive_paths_are_safe_on_windows_too() {
+    for path in [
+      "profile/CON",
+      "profile/AUX.txt",
+      "profile/dir/LPT1.log",
+      "profile/name.",
+      "profile/name ",
+      "profile/a:b",
+      "profile/name*",
+      "profile/name|",
+    ] {
+      assert!(validate_archive_relative_path(path).is_err(), "{path}");
+    }
+    assert!(validate_archive_relative_path("profile/Default/Local State").is_ok());
+    assert!(validate_archive_relative_path("profile/Default/Network/Cookies").is_ok());
+  }
+
+  #[test]
+  fn encrypted_backup_passphrase_has_a_minimum_length() {
+    assert!(validate_password("short").is_err());
+    assert!(validate_password("a-long-enough-passphrase").is_ok());
+  }
+
+  #[test]
   fn volatile_browser_caches_are_not_backed_up() {
     assert!(is_volatile_cache_component("Cache"));
     assert!(is_volatile_cache_component("Code Cache"));
     assert!(is_volatile_file("SingletonLock"));
     assert!(is_volatile_file("LOG.old"));
+    assert!(is_volatile_cache_component("blob_storage"));
+    assert!(is_volatile_cache_component("cache2"));
     assert!(!is_volatile_file("Cookies"));
   }
 }
