@@ -1,0 +1,16 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=HiderTHBROWser
+Name[en]=HiderTHBROWser
+GenericName=Web Browser
+X-GNOME-FullName=HiderTHBROWser
+Comment=Local-first multi-profile browser
+Exec=donutbrowser %u
+Icon=donutbrowser
+StartupNotify=true
+NoDisplay=false
+Categories=Network;WebBrowser;
+MimeType=x-scheme-handler/http;x-scheme-handler/https;text/html;application/xhtml+xml;
+StartupWMClass=HiderTHBROWser
+Keywords=browser;web;internet;profiles;privacy;
