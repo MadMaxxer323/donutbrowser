@@ -17,6 +17,7 @@ import { CommercialTrialModal } from "@/components/commercial-trial-modal";
 import { CookieBotPage, type CookieBotTab } from "@/components/cookie-bot-page";
 import { CookieCopyDialog } from "@/components/cookie-copy-dialog";
 import { CookieManagementDialog } from "@/components/cookie-management-dialog";
+import { BatchLaunchDialog } from "@/components/batch-launch-dialog";
 import { CreateProfileDialog } from "@/components/create-profile-dialog";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 import { DeviceCodeVerifyDialog } from "@/components/device-code-verify-dialog";
@@ -1651,7 +1652,7 @@ export default function Home() {
     async (
       profile: BrowserProfile,
       // `quiet`: a bulk run reports failures in one summary instead.
-      opts?: { bulkRunId?: number; quiet?: boolean },
+      opts?: { bulkRunId?: number; quiet?: boolean; url?: string },
     ): Promise<LaunchResult> => {
       console.log("Starting launch for profile:", profile.name);
 
@@ -1765,6 +1766,7 @@ export default function Home() {
       try {
         const result = await invoke<BrowserProfile>("launch_browser_profile", {
           profile,
+          url: opts?.url ?? null,
           consentToken,
         });
         console.log("Successfully launched profile:", result.name);
@@ -1807,6 +1809,7 @@ export default function Home() {
             const retriedAt = performance.now();
             await invoke<BrowserProfile>("launch_browser_profile", {
               profile,
+              url: opts?.url ?? null,
               consentToken: parsed.params?.token ?? null,
             });
             playUiSound("launch", {
@@ -2203,6 +2206,9 @@ export default function Home() {
     action: "run" | "stop";
     profiles: BrowserProfile[];
   } | null>(null);
+  const [bulkLaunchDialogOpen, setBulkLaunchDialogOpen] = useState(false);
+  const [bulkLaunchTargets, setBulkLaunchTargets] = useState<BrowserProfile[]>([]);
+  const [pendingBulkLaunchUrl, setPendingBulkLaunchUrl] = useState<string | undefined>();
   const [isBulkActing, setIsBulkActing] = useState(false);
 
   // Set once the table filters exist: shows and selects the given profiles.
@@ -2215,7 +2221,7 @@ export default function Home() {
    * in a summary that can show the failed profiles.
    */
   const executeBulkRun = useCallback(
-    async (targets: BrowserProfile[]) => {
+    async (targets: BrowserProfile[], url?: string) => {
       setIsBulkActing(true);
       blanketGateDecisionRef.current = null;
       bulkRunIdRef.current += 1;
@@ -2280,6 +2286,7 @@ export default function Home() {
             const result = await launchProfile(profile, {
               bulkRunId: runId,
               quiet: true,
+              url,
             });
             if (result.status === "blocked") failed.push(profile);
             else if (result.status === "cancelled") declined += 1;
@@ -2403,12 +2410,26 @@ export default function Home() {
       showErrorToast(t("profiles.bulkRun.noneToRun"));
       return;
     }
-    if (targets.length >= 10) {
-      setPendingBulkAction({ action: "run", profiles: targets });
-      return;
-    }
-    void executeBulkRun(targets);
-  }, [selectedProfiles, profiles, runningProfiles, executeBulkRun, t]);
+    setPendingBulkLaunchUrl(undefined);
+    setBulkLaunchTargets(targets);
+    setBulkLaunchDialogOpen(true);
+  }, [selectedProfiles, profiles, runningProfiles, t]);
+
+  const handleConfirmBulkLaunch = useCallback(
+    (url?: string) => {
+      const targets = bulkLaunchTargets;
+      setBulkLaunchDialogOpen(false);
+      setBulkLaunchTargets([]);
+      if (targets.length === 0) return;
+      if (targets.length >= 10) {
+        setPendingBulkLaunchUrl(url);
+        setPendingBulkAction({ action: "run", profiles: targets });
+        return;
+      }
+      void executeBulkRun(targets, url);
+    },
+    [bulkLaunchTargets, executeBulkRun],
+  );
 
   const handleAskAgent = useCallback(
     (profileId: string | null) => {
@@ -3701,15 +3722,26 @@ export default function Home() {
           profile={currentProfileForCookieManagement}
         />
 
+        <BatchLaunchDialog
+          isOpen={bulkLaunchDialogOpen}
+          profileCount={bulkLaunchTargets.length}
+          onClose={() => {
+            setBulkLaunchDialogOpen(false);
+            setBulkLaunchTargets([]);
+          }}
+          onLaunch={handleConfirmBulkLaunch}
+        />
+
         <DeleteConfirmationDialog
           isOpen={pendingBulkAction !== null}
           onClose={() => {
             setPendingBulkAction(null);
+            setPendingBulkLaunchUrl(undefined);
           }}
           onConfirm={() => {
             if (!pendingBulkAction) return;
             if (pendingBulkAction.action === "run") {
-              void executeBulkRun(pendingBulkAction.profiles);
+              void executeBulkRun(pendingBulkAction.profiles, pendingBulkLaunchUrl);
             } else {
               void executeBulkStop(pendingBulkAction.profiles);
             }
