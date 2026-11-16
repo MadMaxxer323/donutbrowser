@@ -5141,6 +5141,33 @@ impl McpServer {
     )
   }
 
+/// Cloud-hosted services are not part of the local Hider edition. Keep
+/// their MCP tools out of discovery and refuse direct calls as a second line
+/// of defence; the local browser tools remain available.
+#[cfg(feature = "hider-local-unlimited")]
+fn is_cloud_only_local_tool(name: &str) -> bool {
+  matches!(
+    name,
+    "get_team_locks"
+      | "get_team_lock_status"
+      | "run_profile_remote"
+      | "stop_remote_session"
+      | "list_remote_sessions"
+      | "get_remote_session"
+      | "get_remote_hours_quota"
+      | "list_cookie_bot_schedules"
+      | "get_cookie_bot_schedule"
+      | "set_cookie_bot_schedule"
+      | "delete_cookie_bot_schedule"
+      | "check_cookie_bot_conflicts"
+      | "list_cookie_bot_runs"
+      | "run_cookie_bot_now"
+      | "cancel_cookie_bot_run"
+      | "list_cookie_bot_presets"
+      | "get_cookie_bot_usage"
+  )
+}
+
   pub fn get_tools(&self) -> Vec<McpTool> {
     let mut tools = vec![
       McpTool {
@@ -7633,7 +7660,13 @@ impl McpServer {
     let tools: Vec<serde_json::Value> = self
       .get_tools()
       .into_iter()
-      .filter(|tool| toolsets.is_none_or(|selection| selection.includes_tool(&tool.name)))
+      .filter(|tool| {
+        #[cfg(feature = "hider-local-unlimited")]
+        if is_cloud_only_local_tool(&tool.name) {
+          return false;
+        }
+        toolsets.is_none_or(|selection| selection.includes_tool(&tool.name))
+      })
       .map(|tool| {
         let output_schema = crate::mcp_views::output_schema_for(&tool.name);
         let annotations = tool_annotations(&tool.name);
@@ -7668,6 +7701,15 @@ impl McpServer {
         message: "Missing tool name".to_string(),
         data: None,
       })?;
+
+    #[cfg(feature = "hider-local-unlimited")]
+    if is_cloud_only_local_tool(tool_name) {
+      return Err(McpError {
+        code: -32000,
+        message: crate::backend_error("CLOUD_FEATURE_NOT_AVAILABLE_IN_LOCAL_EDITION"),
+        data: None,
+      });
+    }
 
     let arguments = params
       .get("arguments")
