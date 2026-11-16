@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Donut",
+  "productName": "HiderTHBROWser",
   "version": "0.36.0",
-  "identifier": "com.donutbrowser",
+  "identifier": "com.hiderthbrowser.desktop",
   "build": {
     "beforeDevCommand": "pnpm copy-proxy-binary && pnpm dev",
     "devUrl": "http://localhost:12341",
@@ -29,9 +29,18 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["app", "dmg", "nsis", "deb", "rpm", "appimage"],
+    "targets": [
+      "app",
+      "dmg",
+      "nsis",
+      "deb",
+      "rpm",
+      "appimage"
+    ],
     "category": "Productivity",
-    "externalBin": ["binaries/xray"],
+    "externalBin": [
+      "binaries/xray"
+    ],
     "resources": {
       "binaries/xray-LICENSE.txt": "licenses/Xray-core-LICENSE.txt"
     },
@@ -54,16 +63,24 @@
     },
     "linux": {
       "deb": {
-        "desktopTemplate": "donutbrowser.desktop",
-        "depends": ["xdg-utils", "libxdo3", "libayatana-appindicator3-1"]
+        "desktopTemplate": "hiderthbrowser.desktop",
+        "depends": [
+          "xdg-utils",
+          "libxdo3",
+          "libayatana-appindicator3-1"
+        ]
       },
       "rpm": {
         "desktopTemplate": "donutbrowser.desktop",
-        "depends": ["xdg-utils", "libxdo", "libayatana-appindicator-gtk3"]
+        "depends": [
+          "xdg-utils",
+          "libxdo",
+          "libayatana-appindicator-gtk3"
+        ]
       },
       "appimage": {
         "files": {
-          "usr/share/metainfo/com.donutbrowser.DonutBrowser.appdata.xml": "target/appimage/com.donutbrowser.DonutBrowser.appdata.xml"
+          "usr/share/metainfo/com.hiderthbrowser.HiderTHBROWser.appdata.xml": "target/appimage/com.hiderthbrowser.HiderTHBROWser.appdata.xml"
         }
       }
     },
@@ -79,7 +96,10 @@
   "plugins": {
     "deep-link": {
       "desktop": {
-        "schemes": ["http", "https"]
+        "schemes": [
+          "http",
+          "https"
+        ]
       }
     }
   }
