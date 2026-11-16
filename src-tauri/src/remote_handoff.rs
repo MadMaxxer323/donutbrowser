@@ -524,12 +524,14 @@ pub fn reconcile(live_session_ids: &std::collections::HashSet<String>) -> Vec<St
 /// Returns the `{"code":…}` string a Tauri command and the REST layer both
 /// surface. Every local launch path calls this: the two that did not are how a
 /// profile could be opened locally while a host was still writing to it.
+#[cfg(all(feature = "hider-local-unlimited", not(test)))]
 pub fn ensure_local_launch_allowed(profile_id: &str) -> Result<(), String> {
-  #[cfg(all(feature = "hider-local-unlimited", not(test)))]
-  {
-    let _ = profile_id;
-    return Ok(());
-  }
+  let _ = profile_id;
+  Ok(())
+}
+
+#[cfg(any(not(feature = "hider-local-unlimited"), test))]
+pub fn ensure_local_launch_allowed(profile_id: &str) -> Result<(), String> {
   match state_for(profile_id) {
     None => Ok(()),
     Some(HandoffState::Running) => Err(crate::backend_error("PROFILE_RUNNING_REMOTELY")),
@@ -540,12 +542,14 @@ pub fn ensure_local_launch_allowed(profile_id: &str) -> Result<(), String> {
 /// Restart the pull for every profile still waiting on one.
 ///
 /// Existing workers wake at once when the connection or sync settings recover.
+#[cfg(all(feature = "hider-local-unlimited", not(test)))]
 pub fn resume_pending_pulls(app_handle: &tauri::AppHandle) {
-  #[cfg(all(feature = "hider-local-unlimited", not(test)))]
-  {
-    let _ = app_handle;
-    return;
-  }
+  let _ = app_handle;
+}
+
+/// Restart cloud handoff pulls in cloud-enabled editions and tests.
+#[cfg(any(not(feature = "hider-local-unlimited"), test))]
+pub fn resume_pending_pulls(app_handle: &tauri::AppHandle) {
   let pending: Vec<String> = with_store(|store| {
     store
       .iter()

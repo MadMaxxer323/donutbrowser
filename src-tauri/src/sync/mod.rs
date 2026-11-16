@@ -121,7 +121,7 @@ pub async fn start_pipeline(app_handle: tauri::AppHandle) {
 
   stop_pipeline();
   #[cfg(feature = "hider-local-unlimited")]
-  if super::account_server::local_self_hosted_server().await.is_none() {
+  if account_server::local_self_hosted_server().await.is_none() {
     log::info!("Local edition: sync idle until a self-hosted server is selected");
     return;
   }

@@ -40,13 +40,6 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Preserve source line endings on Windows
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          git config core.autocrlf false
-          git checkout-index --all --force
-
       - name: Set up pnpm
         uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
@@ -81,7 +74,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Check frontend formatting and types
+        if: runner.os == 'Linux'
         run: pnpm lint:js
+
+      - name: Check frontend types on Windows
+        if: runner.os == 'Windows'
+        run: pnpm exec tsrs --noEmit
 
       - name: Check Linux AppStream metadata
         if: runner.os == 'Linux'
