@@ -209,7 +209,7 @@ export function BatchLaunchDialog({
           </div>
           {setErrorMessage && (
             <p role="alert" className="text-sm text-destructive">
-              {setError}
+              {setErrorMessage}
             </p>
           )}
         </section>
