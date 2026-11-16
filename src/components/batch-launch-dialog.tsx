@@ -25,7 +25,7 @@ function normalizeStartingUrl(value: string): string | undefined | null {
   const trimmed = value.trim();
   if (!trimmed) return undefined;
 
-  const candidate = /^[a-z][a-z\d+.-]*:/i.test(trimmed)
+  const candidate = /^[a-z][a-z\d+.-]*:\/\//i.test(trimmed)
     ? trimmed
     : `https://${trimmed}`;
   try {
