@@ -13,7 +13,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{LazyLock, Mutex};
 
-##[cfg(not(feature = "hider-local-unlimited"))]
+#[cfg(not(feature = "hider-local-unlimited"))]
 use crate::cloud_auth::CLOUD_AUTH;
 
 const WINDOW_SECS: u64 = 60 * 60;
