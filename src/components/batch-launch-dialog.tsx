@@ -69,7 +69,7 @@ export function BatchLaunchDialog({
           : "Could not load saved launch sets.",
       );
     }
-  }, [isOpen, setError]);
+  }, [isOpen]);
 
   const submit = () => {
     const normalized = normalizeStartingUrl(url);
