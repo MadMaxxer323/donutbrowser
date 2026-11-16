@@ -2434,6 +2434,24 @@ export default function Home() {
     [bulkLaunchTargets, executeBulkRun],
   );
 
+  /** Apply a saved local launch set, skipping profiles that are gone or running. */
+  const handleApplyLaunchSet = useCallback(
+    (profileIds: string[]) => {
+      const requested = new Set(profileIds);
+      const targets = profiles.filter(
+        (profile) =>
+          requested.has(profile.id) && !runningProfiles.has(profile.id),
+      );
+      setBulkLaunchTargets(targets);
+      setSelectedProfiles(targets.map((profile) => profile.id));
+      return {
+        availableCount: targets.length,
+        skippedCount: Math.max(0, profileIds.length - targets.length),
+      };
+    },
+    [profiles, runningProfiles],
+  );
+
   const handleAskAgent = useCallback(
     (profileId: string | null) => {
       setChatSeed((current) => ({
@@ -3728,6 +3746,8 @@ export default function Home() {
         <BatchLaunchDialog
           isOpen={bulkLaunchDialogOpen}
           profileCount={bulkLaunchTargets.length}
+          profileIds={bulkLaunchTargets.map((profile) => profile.id)}
+          onApplySet={handleApplyLaunchSet}
           onClose={() => {
             setBulkLaunchDialogOpen(false);
             setBulkLaunchTargets([]);
