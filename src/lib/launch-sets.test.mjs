@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   LAUNCH_SET_PROFILE_LIMIT,
-  parseSavedLaunchSets,
   normalizeStartingUrl,
+  parseSavedLaunchSets,
   removeSavedLaunchSet,
   upsertSavedLaunchSet,
 } from "./launch-sets.ts";
@@ -65,13 +65,14 @@ test("launch-set input is bounded and invalid values are refused", () => {
     { name: "valid", profileIds: [] },
     { name: "valid", profileIds: [""] },
     { name: "valid", profileIds: ["p".repeat(129)] },
-    { name: "valid", profileIds: Array(LAUNCH_SET_PROFILE_LIMIT + 1).fill("p") },
+    {
+      name: "valid",
+      profileIds: Array(LAUNCH_SET_PROFILE_LIMIT + 1).fill("p"),
+    },
     { name: "x".repeat(61), profileIds: ["p1"] },
     { name: "valid", profileIds: ["p1"], startUrl: "javascript:alert(1)" },
   ]) {
-    assert.throws(() =>
-      upsertSavedLaunchSet([], input, 100, () => "set-1"),
-    );
+    assert.throws(() => upsertSavedLaunchSet([], input, 100, () => "set-1"));
   }
 });
 

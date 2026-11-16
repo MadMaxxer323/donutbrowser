@@ -16,8 +16,8 @@ import {
   deleteSavedLaunchSet,
   listSavedLaunchSets,
   normalizeStartingUrl,
-  saveSavedLaunchSet,
   type SavedLaunchSet,
+  saveSavedLaunchSet,
 } from "@/lib/launch-sets";
 
 interface BatchLaunchDialogProps {
@@ -49,7 +49,7 @@ export function BatchLaunchDialog({
   const [error, setError] = useState<string | null>(null);
   const [setName, setSetName] = useState("");
   const [savedSets, setSavedSets] = useState<SavedLaunchSet[]>([]);
-  const [setError, setSetError] = useState<string | null>(null);
+  const [setErrorMessage, setSetError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -69,7 +69,7 @@ export function BatchLaunchDialog({
           : "Could not load saved launch sets.",
       );
     }
-  }, [isOpen]);
+  }, [isOpen, setError]);
 
   const submit = () => {
     const normalized = normalizeStartingUrl(url);
@@ -207,7 +207,7 @@ export function BatchLaunchDialog({
               Save set
             </Button>
           </div>
-          {setError && (
+          {setErrorMessage && (
             <p role="alert" className="text-sm text-destructive">
               {setError}
             </p>

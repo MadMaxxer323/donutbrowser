@@ -29,9 +29,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /** An empty value means each profile uses its own saved startup pages. */
-export function normalizeStartingUrl(
-  value: string,
-): string | undefined | null {
+export function normalizeStartingUrl(value: string): string | undefined | null {
   const trimmed = value.trim();
   if (!trimmed) return undefined;
   if (trimmed.length > MAX_START_URL_LENGTH) return null;
@@ -85,8 +83,8 @@ function checkedLaunchSet(value: unknown): SavedLaunchSet | null {
     typeof id !== "string" ||
     !/^[a-zA-Z0-9_-]{1,128}$/.test(id) ||
     typeof name !== "string" ||
-    !Number.isFinite(updatedAt) ||
-    typeof updatedAt !== "number"
+    typeof updatedAt !== "number" ||
+    !Number.isFinite(updatedAt)
   ) {
     return null;
   }
@@ -104,8 +102,9 @@ function checkedLaunchSet(value: unknown): SavedLaunchSet | null {
   let checkedUrl: string | undefined;
   if (startUrl !== null && startUrl !== undefined) {
     if (typeof startUrl !== "string") return null;
-    checkedUrl = normalizeStartingUrl(startUrl);
-    if (!checkedUrl) return null;
+    const normalizedUrl = normalizeStartingUrl(startUrl);
+    if (!normalizedUrl) return null;
+    checkedUrl = normalizedUrl;
   }
 
   return {
@@ -147,7 +146,9 @@ export function upsertSavedLaunchSet(
 ): SavedLaunchSet[] {
   const name = input.name.trim();
   if (!name || name.length > LAUNCH_SET_NAME_LIMIT) {
-    throw new Error(`Enter a name of 1 to ${LAUNCH_SET_NAME_LIMIT} characters.`);
+    throw new Error(
+      `Enter a name of 1 to ${LAUNCH_SET_NAME_LIMIT} characters.`,
+    );
   }
 
   const profileIds = checkedProfileIds(input.profileIds);
@@ -159,17 +160,21 @@ export function upsertSavedLaunchSet(
 
   let startUrl: string | undefined;
   if (input.startUrl?.trim()) {
-    startUrl = normalizeStartingUrl(input.startUrl);
-    if (!startUrl) {
+    const normalizedUrl = normalizeStartingUrl(input.startUrl);
+    if (!normalizedUrl) {
       throw new Error("Enter a valid HTTP or HTTPS starting URL.");
     }
+    startUrl = normalizedUrl;
   }
 
   const existing = current.find(
-    (item) => item.name.localeCompare(name, undefined, { sensitivity: "accent" }) === 0,
+    (item) =>
+      item.name.localeCompare(name, undefined, { sensitivity: "accent" }) === 0,
   );
   if (!existing && current.length >= SAVED_LAUNCH_SET_LIMIT) {
-    throw new Error(`You can save up to ${SAVED_LAUNCH_SET_LIMIT} launch sets.`);
+    throw new Error(
+      `You can save up to ${SAVED_LAUNCH_SET_LIMIT} launch sets.`,
+    );
   }
 
   const next: SavedLaunchSet = {
@@ -213,9 +218,7 @@ export function saveSavedLaunchSet(
   startUrl?: string,
 ): SavedLaunchSet[] {
   const storage = getStorage();
-  const current = parseSavedLaunchSets(
-    storage.getItem(SAVED_LAUNCH_SETS_KEY),
-  );
+  const current = parseSavedLaunchSets(storage.getItem(SAVED_LAUNCH_SETS_KEY));
   const next = upsertSavedLaunchSet(current, { name, profileIds, startUrl });
   storage.setItem(SAVED_LAUNCH_SETS_KEY, JSON.stringify(next));
   return next;

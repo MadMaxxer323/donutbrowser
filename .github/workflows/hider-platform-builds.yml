@@ -77,6 +77,10 @@ jobs:
         if: runner.os == 'Linux'
         run: pnpm lint:js
 
+      - name: Run saved launch set unit tests
+        if: runner.os == 'Linux'
+        run: pnpm test:launch-sets
+
       - name: Check frontend types on Windows
         if: runner.os == 'Windows'
         run: pnpm exec tsrs --noEmit

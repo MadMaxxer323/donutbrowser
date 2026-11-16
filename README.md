@@ -18,10 +18,6 @@ This repository is the HiderTHBROWser development fork of Donut Browser. It reta
 
 ### Get build artifacts
 
-### Saved batch launch sets
-
-The Profiles page can save reusable bulk-launch sets locally on this device. A set stores profile IDs and an optional HTTP/HTTPS starting URL, not browser data, cookies, credentials, or proxy secrets. Applying a set skips profiles that no longer exist or are already running, then uses the same paced, concurrency-limited, cancellable launch queue as a manual bulk launch.
-
 Every push to `hiderthbrowser-local` triggers the **HiderTHBROWser Windows and Linux Builds** workflow.
 
 1. Open the [Actions tab](https://github.com/MadMaxxer323/donutbrowser/actions/workflows/hider-platform-builds.yml).
@@ -29,6 +25,10 @@ Every push to `hiderthbrowser-local` triggers the **HiderTHBROWser Windows and L
 3. Download `HiderTHBROWser-Windows-x64` for the Windows installer, or `HiderTHBROWser-Linux-x64` for the Linux `.deb` and AppImage packages.
 
 CI artifacts are temporary and are retained for 14 days. They are not signed release downloads.
+
+### Saved batch launch sets
+
+The Profiles page can save reusable bulk-launch sets locally on this device. A set stores profile IDs and an optional HTTP/HTTPS starting URL, not browser data, cookies, credentials, or proxy secrets. Applying a set skips profiles that no longer exist or are already running, then uses the same paced, concurrency-limited, cancellable launch queue as a manual bulk launch.
 
 ## Current local-edition direction
 
