@@ -632,6 +632,14 @@
       "size": "{{width}} × {{height}}",
       "search": "화면 크기 검색...",
       "notFound": "화면 크기를 찾을 수 없습니다."
+    },
+    "launchNow": {
+      "toggle": "이 프로필을 만들고 바로 열기",
+      "urlLabel": "각 프로필에서 열 URL",
+      "urlPlaceholder": "https://example.com",
+      "invalidUrl": "유효한 http:// 또는 https:// 주소를 입력하세요.",
+      "hint": "각 프로필은 별도로 생성되고 이 URL로 실행됩니다.",
+      "submit": "만들고 실행"
     }
   },
   "deleteDialog": {
