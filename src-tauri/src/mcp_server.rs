@@ -7662,7 +7662,7 @@ fn is_cloud_only_local_tool(name: &str) -> bool {
       .into_iter()
       .filter(|tool| {
         #[cfg(feature = "hider-local-unlimited")]
-        if is_cloud_only_local_tool(&tool.name) {
+        if Self::is_cloud_only_local_tool(&tool.name) {
           return false;
         }
         toolsets.is_none_or(|selection| selection.includes_tool(&tool.name))
@@ -7703,7 +7703,7 @@ fn is_cloud_only_local_tool(name: &str) -> bool {
       })?;
 
     #[cfg(feature = "hider-local-unlimited")]
-    if is_cloud_only_local_tool(tool_name) {
+    if Self::is_cloud_only_local_tool(tool_name) {
       return Err(McpError {
         code: -32000,
         message: crate::backend_error("CLOUD_FEATURE_NOT_AVAILABLE_IN_LOCAL_EDITION"),
