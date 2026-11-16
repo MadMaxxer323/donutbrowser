@@ -153,6 +153,10 @@ pub struct McpRequest {
 
 const PROTOCOL_VERSION: &str = "2025-11-25";
 
+#[cfg(feature = "hider-local-unlimited")]
+const INITIALIZE_INSTRUCTIONS: &str = "HiderTHBROWser local MCP server. Use tools/list to discover local browser tools. This server controls profiles and browser sessions on this computer only. Respect the user's instructions and site permissions; do not submit forms, purchase, publish, or make account changes unless the user explicitly asks. Cloud backup/sync, remote browser execution, the cloud Cookie Bot, team locks, and cloud-hosted recipes are not available in this local edition. Call get_human_updates when you start and between steps, report_progress during longer jobs, ask_human when unsure, and request_human_help when a page needs a person. A call refused with AGENT_PAUSED or PROFILE_HELD_BY_HUMAN means the person is in control; do not retry until get_human_updates shows the pause or hold is gone.";
+
+#[cfg(not(feature = "hider-local-unlimited"))]
 const INITIALIZE_INSTRUCTIONS: &str = "Donut Browser MCP server. Use tools/list to discover the browser tools. A person watches your work in Donut: call get_human_updates when you start and between steps, report_progress during longer jobs, ask_human when you are unsure, and request_human_help when a page needs a person. When a Donut tool fails in a way you cannot explain, or you need something it cannot do, tell the Donut team with send_feedback. A call refused with AGENT_PAUSED or PROFILE_HELD_BY_HUMAN means the person is in control; do not retry it until get_human_updates shows the pause or hold is gone.";
 
 const PLAN_WITHOUT_AUTOMATION: &str = " This account's plan does not include browser automation: tools that launch, drive or read a browser are refused with PLAN_REQUIRED. Managing profiles, groups, proxies, VPNs and extensions works.";
@@ -180,6 +184,14 @@ fn negotiate_protocol_version(requested: Option<&str>) -> &'static str {
     None => PROTOCOL_VERSION,
   }
 }
+#[cfg(feature = "hider-local-unlimited")]
+const SERVER_NAME: &str = "hiderthbrowser";
+#[cfg(feature = "hider-local-unlimited")]
+const SERVER_TITLE: &str = "HiderTHBROWser";
+#[cfg(feature = "hider-local-unlimited")]
+const SERVER_WEBSITE: &str = "https://github.com/MadMaxxer323/donutbrowser";
+
+#[cfg(not(feature = "hider-local-unlimited"))]
 const SERVER_NAME: &str = "donut-browser";
 const SERVER_TITLE: &str = "Donut Browser";
 const SERVER_WEBSITE: &str = "https://donutbrowser.com";
@@ -5141,6 +5153,33 @@ impl McpServer {
     )
   }
 
+  /// Cloud-hosted services are not part of the local Hider edition.
+  /// Keep their MCP tools out of discovery and refuse direct calls as a second
+  /// line of defence; the local browser tools remain available.
+  #[cfg(feature = "hider-local-unlimited")]
+  fn is_cloud_only_local_tool(name: &str) -> bool {
+    matches!(
+      name,
+      "get_team_locks"
+        | "get_team_lock_status"
+        | "run_profile_remote"
+        | "stop_remote_session"
+        | "list_remote_sessions"
+        | "get_remote_session"
+        | "get_remote_hours_quota"
+        | "list_cookie_bot_schedules"
+        | "get_cookie_bot_schedule"
+        | "set_cookie_bot_schedule"
+        | "delete_cookie_bot_schedule"
+        | "check_cookie_bot_conflicts"
+        | "list_cookie_bot_runs"
+        | "run_cookie_bot_now"
+        | "cancel_cookie_bot_run"
+        | "list_cookie_bot_presets"
+        | "get_cookie_bot_usage"
+    )
+  }
+
   pub fn get_tools(&self) -> Vec<McpTool> {
     let mut tools = vec![
       McpTool {
@@ -7633,7 +7672,13 @@ impl McpServer {
     let tools: Vec<serde_json::Value> = self
       .get_tools()
       .into_iter()
-      .filter(|tool| toolsets.is_none_or(|selection| selection.includes_tool(&tool.name)))
+      .filter(|tool| {
+        #[cfg(feature = "hider-local-unlimited")]
+        if Self::is_cloud_only_local_tool(&tool.name) {
+          return false;
+        }
+        toolsets.is_none_or(|selection| selection.includes_tool(&tool.name))
+      })
       .map(|tool| {
         let output_schema = crate::mcp_views::output_schema_for(&tool.name);
         let annotations = tool_annotations(&tool.name);
@@ -7668,6 +7713,15 @@ impl McpServer {
         message: "Missing tool name".to_string(),
         data: None,
       })?;
+
+    #[cfg(feature = "hider-local-unlimited")]
+    if Self::is_cloud_only_local_tool(tool_name) {
+      return Err(McpError {
+        code: -32000,
+        message: crate::backend_error("CLOUD_FEATURE_NOT_AVAILABLE_IN_LOCAL_EDITION"),
+        data: None,
+      });
+    }
 
     let arguments = params
       .get("arguments")
