@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.hiderthbrowser.HiderTHBROWser</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-only</project_license>
+
+  <name>HiderTHBROWser</name>
+  <summary>Local-first multi-profile desktop browser</summary>
+  <developer id="com.hiderthbrowser">
+    <name>HiderTHBROWser Contributors</name>
+  </developer>
+
+  <description>
+    <p>
+      HiderTHBROWser is a desktop browser workspace for managing separate local
+      browser profiles. Each profile has its own browser data, fingerprint
+      configuration, proxy settings and automation state.
+    </p>
+    <ul>
+      <li>Locally stored profiles with isolated browser data</li>
+      <li>Wayfern Chromium engine integration, subject to engine availability and license</li>
+      <li>Per-profile HTTP, HTTPS, SOCKS4 and SOCKS5 proxies</li>
+      <li>Profile groups, import/export, cookies and extension management</li>
+      <li>Local REST API and MCP browser automation</li>
+      <li>No HiderTHBROWser cloud backup or hosted execution requirement</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">HiderTHBROWser.desktop</launchable>
+  <provides>
+    <binary>donutbrowser</binary>
+  </provides>
+
+  <url type="homepage">https://github.com/MadMaxxer323/donutbrowser</url>
+  <url type="bugtracker">https://github.com/MadMaxxer323/donutbrowser/issues</url>
+  <url type="vcs-browser">https://github.com/MadMaxxer323/donutbrowser/tree/hiderthbrowser-local</url>
+
+  <categories>
+    <category>Network</category>
+    <category>WebBrowser</category>
+  </categories>
+
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </supports>
+  <requires>
+    <display_length compare="ge">768</display_length>
+  </requires>
+
+  <content_rating type="oars-1.1" />
+
+  <releases>
+    <release version="0.36.0" date="2026-11-16" />
+  </releases>
+</component>
