@@ -93,6 +93,18 @@ The source fork is AGPL-3.0. Rebranding and distributing a modified version must
 6. Rebrand the Tauri app, identifiers, updater, icons, docs, installer names, and package metadata.
 7. Run Rust tests, frontend checks, Windows/macOS/Linux CI, then publish installers.
 
+## Windows and Linux build pipeline
+
+The local branch has a GitHub Actions workflow at `.github/workflows/hider-platform-builds.yml` that builds on native hosted runners whenever this branch is updated, and can also be started manually.
+
+- **Windows 10/11 x64:** Tauri NSIS installer (`.exe`).
+- **Linux x64:** Debian package (`.deb`), RPM package (`.rpm`), and portable AppImage.
+- The workflow uploads platform artifacts for 14 days. These are CI test artifacts, not signed public releases.
+- The Linux build requires the WebKitGTK 4.1, GTK, Ayatana app-indicator, XDO, RPM, and AppImage/FUSE build dependencies.
+- This is not a macOS build pipeline. Native Windows/Linux build jobs are the source of truth for platform compilation; a Linux-only developer environment cannot verify the Windows installer.
+
+The current first Linux x64 DEB/AppImage build has completed successfully on GitHub Actions. The extended RPM matrix is being added now; Windows validation remains dependent on the native Windows runner. Do not describe the installers as production-ready until the corresponding native jobs finish successfully and the generated packages are smoke-tested on target systems.
+
 ## Important repository note
 
 The user's fork currently lives at `MadMaxxer323/donutbrowser` and is a public fork of `donutbrowser/donutbrowser`. The separate `MadMaxxer323/HiderTHBROWser` repository created earlier contains only the small Electron prototype. The production codebase should be the fork; do not try to rebuild 1,000+ source files by copying them individually into the prototype repository.
