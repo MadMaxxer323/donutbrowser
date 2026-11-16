@@ -1837,7 +1837,9 @@
     "encryptedRestorePassword": "Backup-Passphrase",
     "encryptedRestoreButton": "Als neues Profil wiederherstellen",
     "encryptedRestoreSuccess": "{{name}} wurde als neues Profil wiederhergestellt",
-    "encryptedRestoreFileType": "Verschlüsseltes HiderTHBROWser-Backup"
+    "encryptedRestoreFileType": "Verschlüsseltes HiderTHBROWser-Backup",
+    "encryptedRestoreWrongPassword": "Die Passphrase ist falsch oder das Backup wurde beschädigt.",
+    "encryptedRestoreInvalidArchive": "Diese Datei ist kein gültiges verschlüsseltes HiderTHBROWser-Backup."
   },
   "extensions": {
     "title": "Erweiterungen",
