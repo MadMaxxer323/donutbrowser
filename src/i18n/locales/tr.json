@@ -632,6 +632,14 @@
       "size": "{{width}} × {{height}}",
       "search": "Ekran boyutu ara...",
       "notFound": "Ekran boyutu bulunamadı."
+    },
+    "launchNow": {
+      "toggle": "Bu profilleri hemen oluştur ve aç",
+      "urlLabel": "Her profilde açılacak URL",
+      "urlPlaceholder": "https://example.com",
+      "invalidUrl": "Geçerli bir http:// veya https:// adresi girin.",
+      "hint": "Her profil ayrı oluşturulur ve bu URL ile başlatılır.",
+      "submit": "Oluştur ve başlat"
     }
   },
   "deleteDialog": {
