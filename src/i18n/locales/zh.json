@@ -1837,7 +1837,9 @@
     "encryptedRestorePassword": "备份口令",
     "encryptedRestoreButton": "恢复为新配置文件",
     "encryptedRestoreSuccess": "已将 {{name}} 恢复为新配置文件",
-    "encryptedRestoreFileType": "HiderTHBROWser 加密备份"
+    "encryptedRestoreFileType": "HiderTHBROWser 加密备份",
+    "encryptedRestoreWrongPassword": "口令不正确，或备份文件已损坏。",
+    "encryptedRestoreInvalidArchive": "此文件不是有效的 HiderTHBROWser 加密备份。"
   },
   "extensions": {
     "title": "扩展程序",
