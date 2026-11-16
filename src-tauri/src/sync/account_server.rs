@@ -192,6 +192,37 @@ pub async fn configured() -> Option<String> {
   }
 }
 
+/// Resolve only a shared-token server that the user selected for this
+/// installation. A remembered account must not reactivate Donut cloud sync in
+/// the local edition.
+fn local_self_hosted_server_for(
+  settings: &AppSettings,
+  signed_in: bool,
+  team_seat: bool,
+) -> Option<String> {
+  if matches!(
+    settings.sync_source,
+    Some(SyncSourceKind::Cloud | SyncSourceKind::Account)
+  ) {
+    return None;
+  }
+  match resolve(settings, signed_in, team_seat)? {
+    SyncSource::SelfHosted(_) => token_server(settings),
+    SyncSource::Cloud | SyncSource::Account(_) => None,
+  }
+}
+
+/// The shared-token self-hosted server this local edition may use.
+pub async fn local_self_hosted_server() -> Option<String> {
+  let settings = load()?;
+  let signed_in = crate::cloud_auth::CLOUD_AUTH.is_logged_in().await;
+  let team_seat = crate::cloud_auth::CLOUD_AUTH
+    .get_user()
+    .await
+    .is_some_and(|auth| auth.user.team_id.is_some());
+  local_self_hosted_server_for(&settings, signed_in, team_seat)
+}
+
 /// Whether a signed-in device syncs with the shared-token server its person
 /// picked.
 pub async fn self_hosted_picked() -> bool {
@@ -463,6 +494,38 @@ mod tests {
       Some(SyncSource::SelfHosted(SHARED.into())),
       "removing the own server keeps another pick"
     );
+  }
+
+  #[test]
+  fn local_edition_only_uses_a_selected_shared_token_server() {
+    let selected = settings(None, Some(OWN), Some(SyncSourceKind::SelfHosted));
+    assert_eq!(
+      local_self_hosted_server_for(&selected, false, false).as_deref(),
+      Some(OWN),
+    );
+    assert_eq!(
+      local_self_hosted_server_for(&selected, true, false).as_deref(),
+      Some(OWN),
+    );
+
+    // A cached login with no explicit self-hosted choice defaults to cloud in
+    // the normal build, but the local edition must leave sync disabled.
+    let remembered_account = settings(None, Some(OWN), None);
+    assert_eq!(
+      local_self_hosted_server_for(&remembered_account, true, false),
+      None,
+    );
+
+    // Explicit cloud/account choices never get silently redirected.
+    let cloud = settings(None, Some(OWN), Some(SyncSourceKind::Cloud));
+    assert_eq!(local_self_hosted_server_for(&cloud, false, false), None);
+    let account = settings(Some("https://account.example.com"), Some(OWN), Some(SyncSourceKind::Account));
+    assert_eq!(local_self_hosted_server_for(&account, false, false), None);
+
+    // Legacy settings containing Donut's cloud host are never mistaken for
+    // a shared-token self-hosted endpoint.
+    let legacy_cloud = settings(None, Some("https://sync.donutbrowser.com"), None);
+    assert_eq!(local_self_hosted_server_for(&legacy_cloud, false, false), None);
   }
 
   #[test]

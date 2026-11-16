@@ -138,57 +138,81 @@ impl SyncSubscription {
     app_handle: &tauri::AppHandle,
     work_tx: mpsc::UnboundedSender<SyncWorkItem>,
   ) -> Result<Option<Self>, String> {
-    if let Some(server) = super::account_server::configured().await {
-      let token = crate::cloud_auth::CLOUD_AUTH
-        .server_sync_token(&server)
-        .await?;
+    #[cfg(feature = "hider-local-unlimited")]
+    {
+      let Some(server_url) = super::account_server::local_self_hosted_server().await else {
+        return Ok(None);
+      };
+      let manager = SettingsManager::instance();
+      let Some(token) = manager
+        .get_sync_token(app_handle)
+        .await
+        .map_err(|e| format!("Failed to get sync token: {e}"))?
+      else {
+        return Ok(None);
+      };
       return Ok(Some(Self::new(
-        server,
+        server_url,
         token,
-        TokenSource::Account,
+        TokenSource::SelfHosted,
         work_tx,
       )));
     }
 
-    // Cloud auth takes priority
-    if crate::cloud_auth::CLOUD_AUTH.is_logged_in().await
-      && !super::account_server::self_hosted_picked().await
+    #[cfg(not(feature = "hider-local-unlimited"))]
     {
-      let url = crate::cloud_auth::CLOUD_SYNC_URL.to_string();
-      let token = crate::cloud_auth::CLOUD_AUTH
-        .get_or_refresh_sync_token()
-        .await?;
+      if let Some(server) = super::account_server::configured().await {
+        let token = crate::cloud_auth::CLOUD_AUTH
+          .server_sync_token(&server)
+          .await?;
+        return Ok(Some(Self::new(
+          server,
+          token,
+          TokenSource::Account,
+          work_tx,
+        )));
+      }
+
+      // Cloud auth takes priority
+      if crate::cloud_auth::CLOUD_AUTH.is_logged_in().await
+        && !super::account_server::self_hosted_picked().await
+      {
+        let url = crate::cloud_auth::CLOUD_SYNC_URL.to_string();
+        let token = crate::cloud_auth::CLOUD_AUTH
+          .get_or_refresh_sync_token()
+          .await?;
+        let Some(token) = token else {
+          return Ok(None);
+        };
+        return Ok(Some(Self::new(url, token, TokenSource::Cloud, work_tx)));
+      }
+
+      // Fall back to self-hosted settings
+      let manager = SettingsManager::instance();
+      let settings = manager
+        .load_settings()
+        .map_err(|e| format!("Failed to load settings: {e}"))?;
+
+      let Some(server_url) = settings.sync_server_url else {
+        return Ok(None);
+      };
+
+      let token = manager
+        .get_sync_token(app_handle)
+        .await
+        .map_err(|e| format!("Failed to get sync token: {e}"))?;
+
       let Some(token) = token else {
         return Ok(None);
       };
-      return Ok(Some(Self::new(url, token, TokenSource::Cloud, work_tx)));
+
+      Ok(Some(Self::new(
+        server_url,
+        token,
+        TokenSource::SelfHosted,
+        work_tx,
+      )))
     }
-
-    // Fall back to self-hosted settings
-    let manager = SettingsManager::instance();
-    let settings = manager
-      .load_settings()
-      .map_err(|e| format!("Failed to load settings: {e}"))?;
-
-    let Some(server_url) = settings.sync_server_url else {
-      return Ok(None);
-    };
-
-    let token = manager
-      .get_sync_token(app_handle)
-      .await
-      .map_err(|e| format!("Failed to get sync token: {e}"))?;
-
-    let Some(token) = token else {
-      return Ok(None);
-    };
-
-    Ok(Some(Self::new(
-      server_url,
-      token,
-      TokenSource::SelfHosted,
-      work_tx,
-    )))
   }
 
   pub fn is_running(&self) -> bool {

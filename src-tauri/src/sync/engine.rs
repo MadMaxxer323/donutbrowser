@@ -705,49 +705,66 @@ impl SyncEngine {
   }
 
   pub async fn create_from_settings(app_handle: &tauri::AppHandle) -> Result<Self, String> {
-    // Cloud auth takes priority
-    if crate::cloud_auth::CLOUD_AUTH.is_logged_in().await
-      && !super::account_server::self_hosted_picked().await
+    #[cfg(feature = "hider-local-unlimited")]
     {
-      let (url, token) = match super::account_server::configured().await {
-        Some(server) => {
-          let token = crate::cloud_auth::CLOUD_AUTH
-            .server_sync_token(&server)
-            .await
-            .map_err(|e| format!("Failed to get own server sync token: {e}"))?;
-          (server, token)
-        }
-        None => {
-          let token = crate::cloud_auth::CLOUD_AUTH
-            .get_or_refresh_sync_token()
-            .await
-            .map_err(|e| format!("Failed to get cloud sync token: {e}"))?
-            .ok_or_else(|| "Cloud sync token not available".to_string())?;
-          (crate::cloud_auth::CLOUD_SYNC_URL.to_string(), token)
-        }
-      };
-      let mut engine = Self::new(url, token);
-      engine.read_only = crate::team_roles::is_read_only();
-      return Ok(engine);
+      let server_url = super::account_server::local_self_hosted_server()
+        .await
+        .ok_or_else(|| "Self-hosted sync is not configured or selected".to_string())?;
+      let manager = SettingsManager::instance();
+      let token = manager
+        .get_sync_token(app_handle)
+        .await
+        .map_err(|e| format!("Failed to get sync token: {e}"))?
+        .ok_or_else(|| "Sync token not configured".to_string())?;
+      return Ok(Self::new(server_url, token));
     }
 
-    // Fall back to self-hosted settings
-    let manager = SettingsManager::instance();
-    let settings = manager
-      .load_settings()
-      .map_err(|e| format!("Failed to load settings: {e}"))?;
+    #[cfg(not(feature = "hider-local-unlimited"))]
+    {
+      // Cloud auth takes priority
+      if crate::cloud_auth::CLOUD_AUTH.is_logged_in().await
+        && !super::account_server::self_hosted_picked().await
+      {
+        let (url, token) = match super::account_server::configured().await {
+          Some(server) => {
+            let token = crate::cloud_auth::CLOUD_AUTH
+              .server_sync_token(&server)
+              .await
+              .map_err(|e| format!("Failed to get own server sync token: {e}"))?;
+            (server, token)
+          }
+          None => {
+            let token = crate::cloud_auth::CLOUD_AUTH
+              .get_or_refresh_sync_token()
+              .await
+              .map_err(|e| format!("Failed to get cloud sync token: {e}"))?
+              .ok_or_else(|| "Cloud sync token not available".to_string())?;
+            (crate::cloud_auth::CLOUD_SYNC_URL.to_string(), token)
+          }
+        };
+        let mut engine = Self::new(url, token);
+        engine.read_only = crate::team_roles::is_read_only();
+        return Ok(engine);
+      }
 
-    let server_url = settings
-      .sync_server_url
-      .ok_or_else(|| "Sync server URL not configured".to_string())?;
+      // Fall back to self-hosted settings
+      let manager = SettingsManager::instance();
+      let settings = manager
+        .load_settings()
+        .map_err(|e| format!("Failed to load settings: {e}"))?;
 
-    let token = manager
-      .get_sync_token(app_handle)
-      .await
-      .map_err(|e| format!("Failed to get sync token: {e}"))?
-      .ok_or_else(|| "Sync token not configured".to_string())?;
+      let server_url = settings
+        .sync_server_url
+        .ok_or_else(|| "Sync server URL not configured".to_string())?;
 
-    Ok(Self::new(server_url, token))
+      let token = manager
+        .get_sync_token(app_handle)
+        .await
+        .map_err(|e| format!("Failed to get sync token: {e}"))?
+        .ok_or_else(|| "Sync token not configured".to_string())?;
+
+      Ok(Self::new(server_url, token))
+    }
   }
 
   /// Get the key prefix for team profiles. Returns empty string for personal profiles.

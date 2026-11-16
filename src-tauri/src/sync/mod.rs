@@ -120,6 +120,12 @@ pub async fn start_pipeline(app_handle: tauri::AppHandle) {
   let _building = PIPELINE_LOCK.lock().await;
 
   stop_pipeline();
+  #[cfg(feature = "hider-local-unlimited")]
+  if super::account_server::local_self_hosted_server().await.is_none() {
+    log::info!("Local edition: sync idle until a self-hosted server is selected");
+    return;
+  }
+  #[cfg(not(feature = "hider-local-unlimited"))]
   crate::remote_handoff::resume_pending_pulls(&app_handle);
 
   let mut subscription_manager = SubscriptionManager::new();
