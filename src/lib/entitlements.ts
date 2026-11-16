@@ -14,8 +14,10 @@ interface Capabilities {
 }
 
 const NONE: Entitlements = {
-  active: false,
-  browserAutomation: false,
+  // "active" means the local Hider feature set is available; it does not
+  // represent a Donut paid subscription. Every cloud-only capability stays off.
+  active: true,
+  browserAutomation: true,
   crossOsFingerprints: false,
   cloudBackup: false,
   teamCollaboration: false,
@@ -99,6 +101,10 @@ const DEFAULT_PAID: Capabilities = {
 export function getEntitlements(
   user: CloudUser | null | undefined,
 ): Entitlements {
+  // The HiderTHBROWser local edition has no account or subscription tier.
+  // Local browser automation is enabled; remote/cloud capabilities remain off.
+  if (process.env.NEXT_PUBLIC_HIDER_LOCAL_EDITION !== "false") return NONE;
+
   if (user?.entitlements) {
     const server = user.entitlements;
     // A backend (or a cached login) older than the current release omits these
