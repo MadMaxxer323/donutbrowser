@@ -71,7 +71,7 @@
         ]
       },
       "rpm": {
-        "desktopTemplate": "donutbrowser.desktop",
+        "desktopTemplate": "hiderthbrowser.desktop",
         "depends": [
           "xdg-utils",
           "libxdo",
