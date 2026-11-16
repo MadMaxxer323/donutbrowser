@@ -39,10 +39,54 @@ The default Cargo feature `hider-local-unlimited` is enabled in this branch. It 
 - Per-profile fingerprint configuration and the engine's local identity APIs where supported.
 - HTTP, HTTPS, SOCKS4, SOCKS5, and WireGuard profile routing functionality inherited from upstream.
 - Local REST API on `127.0.0.1:10108`.
-- Browser-control MCP tool engine.
+- Browser-control MCP tool engine, exposed locally through the authenticated loopback API and a stdio adapter for AI clients.
 - Cookie and extension management, DNS filtering, bookmarks, and profile utilities.
 
 Availability of a feature in source code does not by itself mean it has been tested or that all upstream service integrations work in this local edition.
+
+## Local MCP for AI agents
+
+The full browser-control MCP engine is available without the Donut cloud relay:
+
+- The desktop serves MCP JSON-RPC at `http://127.0.0.1:10108/v1/mcp` through the existing local API server.
+- The endpoint uses the same bearer token as the REST API and is bound to loopback only.
+- `scripts/hider-mcp-stdio.mjs` bridges newline-delimited MCP stdio messages to that local endpoint. No remote server or cloud account is needed.
+- The local tool list excludes cloud-hosted Cookie Bot, remote browser sessions, and team-lock services that have no local implementation.
+
+Configure an MCP client to launch:
+
+```json
+{
+  "mcpServers": {
+    "hiderthbrowser": {
+      "command": "node",
+      "args": ["/absolute/path/to/donutbrowser/scripts/hider-mcp-stdio.mjs"],
+      "env": {
+        "HIDER_API_TOKEN": "YOUR_LOCAL_API_TOKEN",
+        "HIDER_API_URL": "http://127.0.0.1:10108"
+      }
+    }
+  }
+}
+```
+
+Replace the path and token with your local values. The API token is shown in the app's API settings. Keep it private. Start HiderTHBROWser before starting the MCP client; the desktop must be running for its local browser tools to work.
+
+Run it manually:
+
+```bash
+HIDER_API_TOKEN=YOUR_LOCAL_API_TOKEN pnpm mcp:stdio
+```
+
+Windows PowerShell:
+
+```powershell
+$env:HIDER_API_TOKEN="YOUR_LOCAL_API_TOKEN"
+$env:HIDER_API_URL="http://127.0.0.1:10108"
+pnpm mcp:stdio
+```
+
+The stdio adapter writes only MCP responses to stdout; diagnostics go to stderr.
 
 ## Cloud-dependent features deliberately excluded from the local edition
 
@@ -119,7 +163,8 @@ APPIMAGE_EXTRACT_AND_RUN=1 ./HiderTHBROWser_*.AppImage
 | Cloud Cookie Bot schedule/remote execution | Excluded |
 | Local Cookie Bot replacement scheduler | Planned |
 | Encrypted local full-profile backup/restore | Planned |
-| Dedicated local MCP stdio transport | Needs verification and possible implementation |
+| Local authenticated MCP endpoint | Implemented in development branch; build validation pending |
+| MCP stdio adapter for local AI clients | Implemented in development branch; protocol testing pending |
 | Windows installer | Workflow added; build pending |
 | Linux DEB and AppImage | Workflow added; build pending |
 
