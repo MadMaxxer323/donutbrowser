@@ -13,17 +13,24 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{LazyLock, Mutex};
 
+##[cfg(not(feature = "hider-local-unlimited"))]
 use crate::cloud_auth::CLOUD_AUTH;
 
 const WINDOW_SECS: u64 = 60 * 60;
+#[cfg(any(not(feature = "hider-local-unlimited"), test))]
 const PRO_PER_HOUR: u64 = 100;
+#[cfg(any(not(feature = "hider-local-unlimited"), test))]
 const SOLO_PER_HOUR: u64 = 10;
 /// The free allowance per hour while the profile count is below each bound.
+#[cfg(any(not(feature = "hider-local-unlimited"), test))]
 const FREE_TIERS: [(usize, u64); 3] = [(40, 8), (80, 6), (120, 4)];
+#[cfg(any(not(feature = "hider-local-unlimited"), test))]
 const FREE_FLOOR_PER_HOUR: u64 = 2;
 /// How many browsers may run while a headless one starts beside them; the
 /// headless browser takes a seat of its own. Plans not named have no limit.
+#[cfg(any(not(feature = "hider-local-unlimited"), test))]
 const FREE_RUNNING_BROWSERS: usize = 3;
+#[cfg(any(not(feature = "hider-local-unlimited"), test))]
 const SOLO_RUNNING_BROWSERS: usize = 9;
 /// The identity generations are counted under while nobody is signed in.
 const SIGNED_OUT: &str = "local";
@@ -68,6 +75,7 @@ pub struct Recorded {
   at: u64,
 }
 
+#[cfg(any(not(feature = "hider-local-unlimited"), test))]
 fn free_per_hour(profiles: usize) -> u64 {
   FREE_TIERS
     .iter()
@@ -78,6 +86,7 @@ fn free_per_hour(profiles: usize) -> u64 {
 /// How many profiles a free batch makes: each one it makes counts as a
 /// generation and joins the profile count, which can lower the allowance
 /// before the batch is done.
+#[cfg(any(not(feature = "hider-local-unlimited"), test))]
 fn free_batch_room(profiles: usize, used: u64) -> u64 {
   (0..)
     .take_while(|made: &u64| used + made < free_per_hour(profiles + *made as usize))
@@ -148,28 +157,44 @@ struct Policy {
 }
 
 async fn policy() -> Policy {
-  match CLOUD_AUTH.get_user().await {
-    // A team member's effective plan is the owner's, so Team is capped as Pro.
-    Some(state) if state.user.entitlements().active => {
-      let solo = state.user.effective_plan() == "solo";
-      Policy {
-        enforcement: Enforcement::Hard,
-        per_hour: if solo { SOLO_PER_HOUR } else { PRO_PER_HOUR },
-        identity: state.user.id,
-        profiles: None,
-        running_browsers: solo.then_some(SOLO_RUNNING_BROWSERS),
-      }
+  #[cfg(feature = "hider-local-unlimited")]
+  {
+    // Local browser work has no plan-based hourly generation or browser-seat
+    // limit. The machine's actual RAM/CPU/disk capacity remains the boundary.
+    Policy {
+      identity: "hider-local".to_string(),
+      enforcement: Enforcement::Hard,
+      per_hour: u64::MAX,
+      profiles: None,
+      running_browsers: None,
     }
-    signed_in => {
-      let profiles = crate::profile::ProfileManager::instance()
-        .list_profiles()
-        .map_or(0, |profiles| profiles.len());
-      Policy {
-        identity: signed_in.map_or_else(|| SIGNED_OUT.to_string(), |state| state.user.id),
-        enforcement: Enforcement::Soft,
-        per_hour: free_per_hour(profiles),
-        profiles: Some(profiles),
-        running_browsers: Some(FREE_RUNNING_BROWSERS),
+  }
+
+  #[cfg(not(feature = "hider-local-unlimited"))]
+  {
+    match CLOUD_AUTH.get_user().await {
+      // A team member's effective plan is the owner's, so Team is capped as Pro.
+      Some(state) if state.user.entitlements().active => {
+        let solo = state.user.effective_plan() == "solo";
+        Policy {
+          enforcement: Enforcement::Hard,
+          per_hour: if solo { SOLO_PER_HOUR } else { PRO_PER_HOUR },
+          identity: state.user.id,
+          profiles: None,
+          running_browsers: solo.then_some(SOLO_RUNNING_BROWSERS),
+        }
+      }
+      signed_in => {
+        let profiles = crate::profile::ProfileManager::instance()
+          .list_profiles()
+          .map_or(0, |profiles| profiles.len());
+        Policy {
+          identity: signed_in.map_or_else(|| SIGNED_OUT.to_string(), |state| state.user.id),
+          enforcement: Enforcement::Soft,
+          per_hour: free_per_hour(profiles),
+          profiles: Some(profiles),
+          running_browsers: Some(FREE_RUNNING_BROWSERS),
+        }
       }
     }
   }
