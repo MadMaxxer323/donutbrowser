@@ -632,6 +632,14 @@
       "size": "{{width}} × {{height}}",
       "search": "Search screen sizes...",
       "notFound": "No screen size found."
+    },
+    "launchNow": {
+      "toggle": "Create and open these profiles immediately",
+      "urlLabel": "URL to open in every profile",
+      "urlPlaceholder": "https://example.com",
+      "invalidUrl": "Enter a valid http:// or https:// address.",
+      "hint": "Each profile is generated separately and launched with this URL.",
+      "submit": "Create and launch"
     }
   },
   "deleteDialog": {
