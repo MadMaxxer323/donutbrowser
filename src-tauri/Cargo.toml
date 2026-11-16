@@ -243,8 +243,11 @@ incremental = true
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` points to the filesystem
-default = ["custom-protocol"]
+default = ["custom-protocol", "hider-local-unlimited"]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
 custom-protocol = ["tauri/custom-protocol"]
+# HiderTHBROWser local edition: no subscription quotas for local browser work.
+# Cloud-only services remain unavailable without their own backend.
+hider-local-unlimited = []
 e2e = []
