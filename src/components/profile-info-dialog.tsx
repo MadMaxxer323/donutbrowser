@@ -66,7 +66,10 @@ import {
 import { SiteStoragePanel } from "@/components/profile-info/site-storage";
 import { ProfileLaunchActivity } from "@/components/profile-launch-activity";
 import { ProfileMetadataCard } from "@/components/profile-metadata-card";
-import { EncryptedProfileBackupSection, ExportProfileSection } from "@/components/profile-transfer";
+import {
+  EncryptedProfileBackupSection,
+  ExportProfileSection,
+} from "@/components/profile-transfer";
 import { RestorePoints } from "@/components/restore-points";
 import { SharedFingerprintConfigForm } from "@/components/shared-fingerprint-config-form";
 import { ProfileTotpSection } from "@/components/totp-code";
