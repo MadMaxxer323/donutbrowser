@@ -1837,7 +1837,9 @@
     "encryptedRestorePassword": "Backup passphrase",
     "encryptedRestoreButton": "Restore as new profile",
     "encryptedRestoreSuccess": "Restored {{name}} as a new profile",
-    "encryptedRestoreFileType": "HiderTHBROWser encrypted backup"
+    "encryptedRestoreFileType": "HiderTHBROWser encrypted backup",
+    "encryptedRestoreWrongPassword": "The passphrase is incorrect or the backup has been damaged.",
+    "encryptedRestoreInvalidArchive": "This file is not a valid HiderTHBROWser encrypted backup."
   },
   "extensions": {
     "title": "Extensions",
