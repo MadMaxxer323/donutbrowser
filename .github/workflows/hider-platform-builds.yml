@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - hiderthbrowser-local
+      - hider-multi-launcher
   workflow_dispatch:
 
 permissions:
