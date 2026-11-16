@@ -1848,7 +1848,9 @@
     "encryptedRestorePassword": "Frase secreta do backup",
     "encryptedRestoreButton": "Restaurar como novo perfil",
     "encryptedRestoreSuccess": "{{name}} foi restaurado como um novo perfil",
-    "encryptedRestoreFileType": "Backup criptografado do HiderTHBROWser"
+    "encryptedRestoreFileType": "Backup criptografado do HiderTHBROWser",
+    "encryptedRestoreWrongPassword": "A frase secreta está incorreta ou o backup foi danificado.",
+    "encryptedRestoreInvalidArchive": "Este arquivo não é um backup criptografado válido do HiderTHBROWser."
   },
   "extensions": {
     "title": "Extensões",
