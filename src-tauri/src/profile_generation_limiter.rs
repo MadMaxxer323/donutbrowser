@@ -298,6 +298,7 @@ pub async fn get_profile_creation_allowance() -> Allowance {
       policy.per_hour,
       crate::proxy_manager::now_secs(),
     );
+  #[cfg(not(feature = "hider-local-unlimited"))]
   if let Some(profiles) = policy.profiles {
     allowance.remaining = free_batch_room(profiles, allowance.used);
   }
