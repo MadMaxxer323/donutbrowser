@@ -1848,7 +1848,9 @@
     "encryptedRestorePassword": "Frase de contraseña de la copia",
     "encryptedRestoreButton": "Restaurar como perfil nuevo",
     "encryptedRestoreSuccess": "{{name}} se restauró como un perfil nuevo",
-    "encryptedRestoreFileType": "Copia cifrada de HiderTHBROWser"
+    "encryptedRestoreFileType": "Copia cifrada de HiderTHBROWser",
+    "encryptedRestoreWrongPassword": "La frase de contraseña es incorrecta o la copia está dañada.",
+    "encryptedRestoreInvalidArchive": "Este archivo no es una copia cifrada válida de HiderTHBROWser."
   },
   "extensions": {
     "title": "Extensiones",
