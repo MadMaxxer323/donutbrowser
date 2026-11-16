@@ -1837,7 +1837,9 @@
     "encryptedRestorePassword": "Yedek parola ifadesi",
     "encryptedRestoreButton": "Yeni profil olarak geri yükle",
     "encryptedRestoreSuccess": "{{name}} yeni bir profil olarak geri yüklendi",
-    "encryptedRestoreFileType": "HiderTHBROWser şifrelenmiş yedeği"
+    "encryptedRestoreFileType": "HiderTHBROWser şifrelenmiş yedeği",
+    "encryptedRestoreWrongPassword": "Parola ifadesi yanlış veya yedek zarar görmüş.",
+    "encryptedRestoreInvalidArchive": "Bu dosya geçerli bir HiderTHBROWser şifrelenmiş yedeği değil."
   },
   "extensions": {
     "title": "Uzantılar",
