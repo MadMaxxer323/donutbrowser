@@ -57,6 +57,7 @@ export function BatchLaunchDialog({
   const [savedSets, setSavedSets] = useState<SavedLaunchSet[]>([]);
   const [setErrorMessage, setSetError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [isTransferringSets, setIsTransferringSets] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;

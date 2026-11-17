@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   LAUNCH_SET_PROFILE_LIMIT,
+  SAVED_LAUNCH_SET_LIMIT,
   mergeImportedLaunchSets,
   normalizeStartingUrl,
   parseLaunchSetExport,
@@ -96,6 +97,40 @@ test("saved data is validated on read and malformed storage is ignored", () => {
   assert.deepEqual(parseSavedLaunchSets(raw), [valid]);
   assert.deepEqual(parseSavedLaunchSets("{broken"), []);
   assert.deepEqual(parseSavedLaunchSets("null"), []);
+});
+
+test("saved storage keeps newest unique entries and caps the newest sets", () => {
+  const record = (id, name, updatedAt) => ({
+    id,
+    name,
+    profileIds: ["profile-1"],
+    startUrl: null,
+    updatedAt,
+  });
+
+  const deduplicated = parseSavedLaunchSets(
+    JSON.stringify([
+      record("same-id", "Earlier", 1),
+      record("same-id", "Latest", 3),
+      record("other-id", "latest", 2),
+    ]),
+  );
+  assert.equal(deduplicated.length, 1);
+  assert.equal(deduplicated[0].name, "Latest");
+
+  const oversized = parseSavedLaunchSets(
+    JSON.stringify(
+      Array.from({ length: SAVED_LAUNCH_SET_LIMIT + 1 }, (_, index) =>
+        record(`set-${index}`, `Set ${index}`, index),
+      ),
+    ),
+  );
+  assert.equal(oversized.length, SAVED_LAUNCH_SET_LIMIT);
+  assert.equal(oversized[0].id, `set-${SAVED_LAUNCH_SET_LIMIT}`);
+  assert.equal(
+    oversized.some((item) => item.id === "set-0"),
+    false,
+  );
 });
 
 test("deleting a set leaves the other sets untouched", () => {

@@ -121,11 +121,23 @@ export function parseSavedLaunchSets(raw: string | null): SavedLaunchSet[] {
   try {
     const value: unknown = JSON.parse(raw);
     if (!Array.isArray(value)) return [];
-    return value
+
+    const checked = value
       .map(checkedLaunchSet)
       .filter((item): item is SavedLaunchSet => item !== null)
-      .slice(0, SAVED_LAUNCH_SET_LIMIT)
       .sort((a, b) => b.updatedAt - a.updatedAt);
+    const ids = new Set<string>();
+    const names = new Set<string>();
+
+    return checked
+      .filter((item) => {
+        const nameKey = item.name.toLocaleLowerCase();
+        if (ids.has(item.id) || names.has(nameKey)) return false;
+        ids.add(item.id);
+        names.add(nameKey);
+        return true;
+      })
+      .slice(0, SAVED_LAUNCH_SET_LIMIT);
   } catch {
     return [];
   }
