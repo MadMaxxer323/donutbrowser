@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   LAUNCH_SET_PROFILE_LIMIT,
-  SAVED_LAUNCH_SET_LIMIT,
   mergeImportedLaunchSets,
   normalizeStartingUrl,
   parseLaunchSetExport,
   parseSavedLaunchSets,
   removeSavedLaunchSet,
+  SAVED_LAUNCH_SET_LIMIT,
   serializeSavedLaunchSets,
   upsertSavedLaunchSet,
 } from "./launch-sets.ts";
@@ -251,5 +251,8 @@ test("import merges by name and preserves the existing local ID", () => {
     merged.find((item) => item.name === "daily qa")?.profileIds,
     ["new-profile"],
   );
-  assert.equal(merged.find((item) => item.name === "Smoke")?.id, "new-local-id");
+  assert.equal(
+    merged.find((item) => item.name === "Smoke")?.id,
+    "new-local-id",
+  );
 });

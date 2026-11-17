@@ -258,7 +258,9 @@ export function serializeSavedLaunchSets(
     throw new Error("There are no saved launch sets to export.");
   }
   if (sets.length > SAVED_LAUNCH_SET_LIMIT) {
-    throw new Error(`You can export up to ${SAVED_LAUNCH_SET_LIMIT} launch sets.`);
+    throw new Error(
+      `You can export up to ${SAVED_LAUNCH_SET_LIMIT} launch sets.`,
+    );
   }
 
   const checked = sets
@@ -384,9 +386,7 @@ export function mergeImportedLaunchSets(
 }
 
 /** Replace local saved-set storage after a validated, atomic import merge. */
-export function storeSavedLaunchSets(
-  sets: SavedLaunchSet[],
-): SavedLaunchSet[] {
+export function storeSavedLaunchSets(sets: SavedLaunchSet[]): SavedLaunchSet[] {
   if (!Array.isArray(sets) || sets.length > SAVED_LAUNCH_SET_LIMIT) {
     throw new Error("The saved launch set list is invalid.");
   }
