@@ -30,6 +30,8 @@ CI artifacts are temporary and are retained for 14 days. They are not signed rel
 
 The Profiles page can save reusable bulk-launch sets locally on this device. A set stores profile IDs and an optional HTTP/HTTPS starting URL, not browser data, cookies, credentials, or proxy secrets. Applying a set skips profiles that no longer exist or are already running, then uses the same paced, concurrency-limited, cancellable launch queue as a manual bulk launch.
 
+Saved sets can also be exported to and imported from a versioned `.hiderlaunchsets` file. The file contains only set names, local profile IDs, and optional starting URLs; it does not contain profile data, cookies, credentials, or proxy secrets. Importing a set with the same name updates the existing set. Profile IDs that do not exist on the current installation are skipped when that set is applied. The export is plain JSON, so treat it as configuration data rather than an encrypted backup.
+
 ## Current local-edition direction
 
 The default Cargo feature `hider-local-unlimited` is enabled in this branch. It removes subscription-based caps on local profile generation, concurrent browser seats, and local REST/MCP automation requests.

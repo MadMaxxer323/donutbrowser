@@ -114,3 +114,94 @@ test("deleting a set leaves the other sets untouched", () => {
   ];
   assert.deepEqual(removeSavedLaunchSet(sets, "one"), [sets[1]]);
 });
+
+
+test("launch sets export as a versioned portable file without local row IDs", () => {
+  const sets = [
+    {
+      id: "local-id",
+      name: "Nightly QA",
+      profileIds: ["profile-a", "profile-b"],
+      startUrl: "https://example.com/",
+      updatedAt: 123,
+    },
+  ];
+  const raw = serializeSavedLaunchSets(sets, "2026-11-17T00:00:00.000Z");
+  const file = JSON.parse(raw);
+  assert.equal(file.format, "hiderthbrowser.launch-sets");
+  assert.equal(file.version, 1);
+  assert.equal(file.exportedAt, "2026-11-17T00:00:00.000Z");
+  assert.equal("id" in file.launchSets[0], false);
+  assert.equal("updatedAt" in file.launchSets[0], false);
+  assert.deepEqual(parseLaunchSetExport(raw), [
+    {
+      name: "Nightly QA",
+      profileIds: ["profile-a", "profile-b"],
+      startUrl: "https://example.com/",
+    },
+  ]);
+});
+
+test("launch set import rejects unsupported, duplicate, oversized and unsafe files", () => {
+  assert.throws(() => parseLaunchSetExport("{broken"));
+  assert.throws(() =>
+    parseLaunchSetExport(JSON.stringify({ format: "other", version: 1, launchSets: [] })),
+  );
+  assert.throws(() =>
+    parseLaunchSetExport(JSON.stringify({
+      format: "hiderthbrowser.launch-sets",
+      version: 2,
+      launchSets: [{ name: "QA", profileIds: ["p1"] }],
+    })),
+  );
+  assert.throws(() =>
+    parseLaunchSetExport(JSON.stringify({
+      format: "hiderthbrowser.launch-sets",
+      version: 1,
+      launchSets: [
+        { name: "QA", profileIds: ["p1"] },
+        { name: "qa", profileIds: ["p2"] },
+      ],
+    })),
+  );
+  assert.throws(() =>
+    parseLaunchSetExport(JSON.stringify({
+      format: "hiderthbrowser.launch-sets",
+      version: 1,
+      launchSets: [{ name: "Unsafe", profileIds: ["p1"], startUrl: "javascript:alert(1)" }],
+    })),
+  );
+});
+
+test("import merges by name and preserves the existing local ID", () => {
+  const current = [
+    {
+      id: "local-existing",
+      name: "Daily QA",
+      profileIds: ["old-profile"],
+      startUrl: null,
+      updatedAt: 100,
+    },
+  ];
+  const imported = parseLaunchSetExport(JSON.stringify({
+    format: "hiderthbrowser.launch-sets",
+    version: 1,
+    launchSets: [
+      { name: "daily qa", profileIds: ["new-profile"], startUrl: "example.com" },
+      { name: "Smoke", profileIds: ["profile-2"], startUrl: null },
+    ],
+  }));
+  const merged = mergeImportedLaunchSets(
+    current,
+    imported,
+    200,
+    () => "new-local-id",
+  );
+  assert.equal(merged.length, 2);
+  assert.equal(merged.find((item) => item.name.toLowerCase() === "daily qa")?.id, "local-existing");
+  assert.deepEqual(
+    merged.find((item) => item.name === "daily qa")?.profileIds,
+    ["new-profile"],
+  );
+  assert.equal(merged.find((item) => item.name === "Smoke")?.id, "new-local-id");
+});

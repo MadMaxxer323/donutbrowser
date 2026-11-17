@@ -233,3 +233,162 @@ export function deleteSavedLaunchSet(id: string): SavedLaunchSet[] {
   storage.setItem(SAVED_LAUNCH_SETS_KEY, JSON.stringify(next));
   return next;
 }
+
+
+/** Portable file format for saved launch sets. Profile IDs are local references. */
+export const SAVED_LAUNCH_SET_EXPORT_FORMAT = "hiderthbrowser.launch-sets";
+export const SAVED_LAUNCH_SET_EXPORT_VERSION = 1;
+
+export function serializeSavedLaunchSets(
+  sets: SavedLaunchSet[],
+  exportedAt = new Date().toISOString(),
+): string {
+  if (!Array.isArray(sets) || sets.length === 0) {
+    throw new Error("There are no saved launch sets to export.");
+  }
+  if (sets.length > SAVED_LAUNCH_SET_LIMIT) {
+    throw new Error(`You can export up to ${SAVED_LAUNCH_SET_LIMIT} launch sets.`);
+  }
+
+  const checked = sets.map(checkedLaunchSet);
+  if (checked.some((item) => item === null)) {
+    throw new Error("Saved launch set data is invalid. Review the saved sets and try again.");
+  }
+
+  const content = JSON.stringify(
+    {
+      format: SAVED_LAUNCH_SET_EXPORT_FORMAT,
+      version: SAVED_LAUNCH_SET_EXPORT_VERSION,
+      exportedAt,
+      launchSets: checked.map((item) => ({
+        name: item!.name,
+        profileIds: item!.profileIds,
+        startUrl: item!.startUrl,
+      })),
+    },
+    null,
+    2,
+  );
+  if (content.length > MAX_STORED_LENGTH) {
+    throw new Error("The export is too large.");
+  }
+  return `${content}\n`;
+}
+
+/**
+ * Parse the complete portable file before changing local storage. One invalid
+ * entry rejects the whole import, so a partly imported file is never mistaken
+ * for a complete backup.
+ */
+export function parseLaunchSetExport(raw: string): SaveLaunchSetInput[] {
+  if (!raw || raw.length > MAX_STORED_LENGTH) {
+    throw new Error("The launch set file is empty or too large.");
+  }
+
+  let value: unknown;
+  try {
+    value = JSON.parse(raw);
+  } catch {
+    throw new Error("The launch set file is not valid JSON.");
+  }
+
+  if (
+    !isRecord(value) ||
+    value.format !== SAVED_LAUNCH_SET_EXPORT_FORMAT ||
+    value.version !== SAVED_LAUNCH_SET_EXPORT_VERSION
+  ) {
+    throw new Error("This is not a supported HiderTHBROWser launch set file.");
+  }
+  if (
+    !Array.isArray(value.launchSets) ||
+    value.launchSets.length === 0 ||
+    value.launchSets.length > SAVED_LAUNCH_SET_LIMIT
+  ) {
+    throw new Error(
+      `The file must contain between 1 and ${SAVED_LAUNCH_SET_LIMIT} launch sets.`,
+    );
+  }
+
+  const names = new Set<string>();
+  const imported: SaveLaunchSetInput[] = [];
+  for (const entry of value.launchSets) {
+    if (!isRecord(entry)) {
+      throw new Error("The launch set file contains an invalid entry.");
+    }
+    const checked = checkedLaunchSet({
+      id: "imported",
+      name: entry.name,
+      profileIds: entry.profileIds,
+      startUrl: entry.startUrl ?? null,
+      updatedAt: 0,
+    });
+    if (!checked) {
+      throw new Error("The launch set file contains invalid names, profile IDs, or URLs.");
+    }
+    const nameKey = checked.name.toLocaleLowerCase();
+    if (names.has(nameKey)) {
+      throw new Error("The launch set file contains duplicate names.");
+    }
+    names.add(nameKey);
+    imported.push({
+      name: checked.name,
+      profileIds: checked.profileIds,
+      startUrl: checked.startUrl,
+    });
+  }
+  return imported;
+}
+
+/** Merge imported sets by name; a same-name import updates the existing set. */
+export function mergeImportedLaunchSets(
+  current: SavedLaunchSet[],
+  imported: SaveLaunchSetInput[],
+  updatedAt = Date.now(),
+  idFactory: () => string = createId,
+): SavedLaunchSet[] {
+  if (
+    !Array.isArray(imported) ||
+    imported.length === 0 ||
+    imported.length > SAVED_LAUNCH_SET_LIMIT
+  ) {
+    throw new Error("The imported launch set list is invalid.");
+  }
+
+  let next = current;
+  for (let index = 0; index < imported.length; index += 1) {
+    next = upsertSavedLaunchSet(
+      next,
+      imported[index],
+      updatedAt + index,
+      idFactory,
+    );
+  }
+  return next;
+}
+
+/** Replace local saved-set storage after a validated, atomic import merge. */
+export function storeSavedLaunchSets(sets: SavedLaunchSet[]): SavedLaunchSet[] {
+  if (!Array.isArray(sets) || sets.length > SAVED_LAUNCH_SET_LIMIT) {
+    throw new Error("The saved launch set list is invalid.");
+  }
+  const checked = sets.map(checkedLaunchSet);
+  if (checked.some((item) => item === null)) {
+    throw new Error("The saved launch set list contains invalid data.");
+  }
+  const ids = new Set<string>();
+  const names = new Set<string>();
+  for (const item of checked) {
+    if (!item) continue;
+    const nameKey = item.name.toLocaleLowerCase();
+    if (ids.has(item.id) || names.has(nameKey)) {
+      throw new Error("The saved launch set list contains duplicate IDs or names.");
+    }
+    ids.add(item.id);
+    names.add(nameKey);
+  }
+  const next = (checked as SavedLaunchSet[]).sort(
+    (a, b) => b.updatedAt - a.updatedAt,
+  );
+  getStorage().setItem(SAVED_LAUNCH_SETS_KEY, JSON.stringify(next));
+  return next;
+}

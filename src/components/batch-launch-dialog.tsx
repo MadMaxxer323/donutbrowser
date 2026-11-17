@@ -102,6 +102,68 @@ export function BatchLaunchDialog({
     }
   };
 
+  const exportLaunchSets = async () => {
+    if (savedSets.length === 0) return;
+    setIsTransferringSets(true);
+    try {
+      const destination = await save({
+        title: "Export saved launch sets",
+        defaultPath: "HiderTHBROWser-launch-sets.hiderlaunchsets",
+        filters: [
+          {
+            name: "HiderTHBROWser launch sets",
+            extensions: ["hiderlaunchsets"],
+          },
+        ],
+      });
+      if (!destination) return;
+      await writeTextFile(destination, serializeSavedLaunchSets(savedSets));
+      setSetError(null);
+      setNotice(`${savedSets.length} launch sets exported.`);
+    } catch (exportError) {
+      setSetError(
+        exportError instanceof Error
+          ? exportError.message
+          : "Could not export saved launch sets.",
+      );
+    } finally {
+      setIsTransferringSets(false);
+    }
+  };
+
+  const importLaunchSets = async () => {
+    setIsTransferringSets(true);
+    try {
+      const selected = await openDialog({
+        multiple: false,
+        title: "Import saved launch sets",
+        filters: [
+          {
+            name: "HiderTHBROWser launch sets",
+            extensions: ["hiderlaunchsets"],
+          },
+        ],
+      });
+      if (typeof selected !== "string") return;
+      const imported = parseLaunchSetExport(await readTextFile(selected));
+      const merged = mergeImportedLaunchSets(savedSets, imported);
+      const next = storeSavedLaunchSets(merged);
+      setSavedSets(next);
+      setSetError(null);
+      setNotice(
+        `${imported.length} launch sets imported. Matching names were updated; unavailable profiles are skipped when a set is used.`,
+      );
+    } catch (importError) {
+      setSetError(
+        importError instanceof Error
+          ? importError.message
+          : "Could not import saved launch sets.",
+      );
+    } finally {
+      setIsTransferringSets(false);
+    }
+  };
+
   const applySet = (savedSet: SavedLaunchSet) => {
     const result = onApplySet(savedSet.profileIds);
     setUrl(savedSet.startUrl ?? "");
@@ -215,11 +277,29 @@ export function BatchLaunchDialog({
         </section>
 
         <section className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-medium">Saved launch sets</h3>
-            <span className="text-xs text-muted-foreground">
-              {savedSets.length} saved
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground">
+                {savedSets.length} saved
+              </span>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={isTransferringSets}
+                onClick={() => void importLaunchSets()}
+              >
+                Import
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={isTransferringSets || savedSets.length === 0}
+                onClick={() => void exportLaunchSets()}
+              >
+                Export
+              </Button>
+            </div>
           </div>
           {savedSets.length === 0 ? (
             <p className="rounded-lg bg-muted/40 px-3 py-4 text-center text-xs text-muted-foreground">
