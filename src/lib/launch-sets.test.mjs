@@ -2,9 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   LAUNCH_SET_PROFILE_LIMIT,
+  mergeImportedLaunchSets,
   normalizeStartingUrl,
+  parseLaunchSetExport,
   parseSavedLaunchSets,
   removeSavedLaunchSet,
+  serializeSavedLaunchSets,
   upsertSavedLaunchSet,
 } from "./launch-sets.ts";
 
@@ -115,7 +118,6 @@ test("deleting a set leaves the other sets untouched", () => {
   assert.deepEqual(removeSavedLaunchSet(sets, "one"), [sets[1]]);
 });
 
-
 test("launch sets export as a versioned portable file without local row IDs", () => {
   const sets = [
     {
@@ -143,33 +145,35 @@ test("launch sets export as a versioned portable file without local row IDs", ()
 });
 
 test("launch set import rejects unsupported, duplicate, oversized and unsafe files", () => {
+  const envelope = (launchSets, version = 1) =>
+    JSON.stringify({
+      format: "hiderthbrowser.launch-sets",
+      version,
+      launchSets,
+    });
+
   assert.throws(() => parseLaunchSetExport("{broken"));
+  assert.throws(() => parseLaunchSetExport(envelope([], 1)));
+  assert.throws(() => parseLaunchSetExport(envelope([], 2)));
+  assert.throws(() => parseLaunchSetExport("x".repeat(2_000_001)));
   assert.throws(() =>
-    parseLaunchSetExport(JSON.stringify({ format: "other", version: 1, launchSets: [] })),
-  );
-  assert.throws(() =>
-    parseLaunchSetExport(JSON.stringify({
-      format: "hiderthbrowser.launch-sets",
-      version: 2,
-      launchSets: [{ name: "QA", profileIds: ["p1"] }],
-    })),
-  );
-  assert.throws(() =>
-    parseLaunchSetExport(JSON.stringify({
-      format: "hiderthbrowser.launch-sets",
-      version: 1,
-      launchSets: [
+    parseLaunchSetExport(
+      envelope([
         { name: "QA", profileIds: ["p1"] },
         { name: "qa", profileIds: ["p2"] },
-      ],
-    })),
+      ]),
+    ),
   );
   assert.throws(() =>
-    parseLaunchSetExport(JSON.stringify({
-      format: "hiderthbrowser.launch-sets",
-      version: 1,
-      launchSets: [{ name: "Unsafe", profileIds: ["p1"], startUrl: "javascript:alert(1)" }],
-    })),
+    parseLaunchSetExport(
+      envelope([
+        {
+          name: "Unsafe",
+          profileIds: ["p1"],
+          startUrl: "javascript:alert(1)",
+        },
+      ]),
+    ),
   );
 });
 
@@ -183,14 +187,20 @@ test("import merges by name and preserves the existing local ID", () => {
       updatedAt: 100,
     },
   ];
-  const imported = parseLaunchSetExport(JSON.stringify({
-    format: "hiderthbrowser.launch-sets",
-    version: 1,
-    launchSets: [
-      { name: "daily qa", profileIds: ["new-profile"], startUrl: "example.com" },
-      { name: "Smoke", profileIds: ["profile-2"], startUrl: null },
-    ],
-  }));
+  const imported = parseLaunchSetExport(
+    JSON.stringify({
+      format: "hiderthbrowser.launch-sets",
+      version: 1,
+      launchSets: [
+        {
+          name: "daily qa",
+          profileIds: ["new-profile"],
+          startUrl: "example.com",
+        },
+        { name: "Smoke", profileIds: ["profile-2"], startUrl: null },
+      ],
+    }),
+  );
   const merged = mergeImportedLaunchSets(
     current,
     imported,
@@ -198,7 +208,10 @@ test("import merges by name and preserves the existing local ID", () => {
     () => "new-local-id",
   );
   assert.equal(merged.length, 2);
-  assert.equal(merged.find((item) => item.name.toLowerCase() === "daily qa")?.id, "local-existing");
+  assert.equal(
+    merged.find((item) => item.name.toLowerCase() === "daily qa")?.id,
+    "local-existing",
+  );
   assert.deepEqual(
     merged.find((item) => item.name === "daily qa")?.profileIds,
     ["new-profile"],
